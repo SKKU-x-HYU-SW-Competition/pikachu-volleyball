@@ -11,4 +11,6 @@ CI가 없으므로, 이 로그가 "누가 뭘 했는지"를 공유하는 유일�
 
 | 날짜 | 커밋 해시 | 작성자 (도구) | Phase | 요약 | 관련 문서 |
 |---|---|---|---|---|---|
+| 2026-07-07 | (커밋 전) | Claude Code (사용자 승인) | ① 입력 구조 | D-001(틱 그룹핑=1 확정)/D-002(타임아웃·오반환 시 무입력)/D-003(Worker 격리) 결정 및 반영. CONTRACTS.md에 §1.3(실행 모델) 신설 | CONTRACTS.md v0.3, DECISIONS.md D-001/D-002/D-003 RESOLVED |
+| 2026-07-07 | (커밋 전) | YoonJinJung (Claude Code) | ① 입력 구조 | 브레인스토밍한 봇 프로토콜을 엔진 코드와 대조 검토. 출력을 4-bit(left/right/jump/spike)→엔진과 1:1인 3필드(x/y/hit)로 변경, 좌표계는 원본 정수 픽셀 그대로 확정, `expectedLandingPointX` 노출 확정, 세트제 미도입 확정 | CONTRACTS.md v0.2, DECISIONS.md D-006/D-007/D-008 RESOLVED |
 | 2026-07-07 | (초기 세팅, 커밋 전) | YoonJinJung (Claude Code) | - | agent 개발 환경 문서 인프라 구성 (CLAUDE.md/AGENTS.md 이중화, CONTRACTS/PHASES/KICKOFF/VERIFY/TRACKER/DECISIONS) | CONTRACTS.md v0.1 |
