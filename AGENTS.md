@@ -64,14 +64,17 @@ MVC 패턴이며 세 축:
 - **세션 시작**: [KICKOFF.md](docs/agent-dev/KICKOFF.md)의 프롬프트를 복붙해서 시작하세요. 매번 컨텍스트를 처음부터 설명하지 않기 위한 장치입니다.
 - **검증은 로컬에서, 리뷰는 정기 회의에서**: 이 프로젝트는 CI/CD를 두지 않기로 했습니다(자동화보다 대면 코드리뷰를 우선). 대신 커밋 전 [VERIFY.md](docs/agent-dev/VERIFY.md) 체크리스트를 로컬에서 직접 돌리고, [TRACKER.md](docs/agent-dev/TRACKER.md)에 기록을 남겨 회의 때 그걸 보고 리뷰합니다.
 - **모르는 건 멋대로 정하지 않기**: 스펙이 불확실하면 그 자리에서 결정하지 말고 최소한의 stub(임시 기본값)으로 막아두고 [DECISIONS.md](docs/agent-dev/DECISIONS.md)에 등재하세요. 특히 `CONTRACTS.md`에 있는 값(틱 길이, 입출력 프로토콜 등)은 검증 과정에서 바뀔 수 있다고 이미 논의됨 — 혼자 확정 짓지 말 것.
-- **트랙 담당(오너십)**: 트랙별 담당자/리뷰어는 아래 표에 채워 넣으세요 (TODO: 팀장 작성).
+- **트랙 담당(오너십)**: 아래 표는 현재 이 스레드/세션에서 진행 중인 작업 기준입니다 (결정:
+  [DECISIONS.md](docs/agent-dev/DECISIONS.md) D-005). 다른 공동 운영진이 합류하면 트랙별로
+  담당/리뷰/도구를 다시 채우세요 — 이 저장소는 원래 여러 명이 각자 다른 도구를 쓰는 걸 전제로 하므로,
+  아래는 최종 로스터가 아니라 지금 시점의 스냅샷입니다.
 
 | 트랙 | 담당(구현) | 리뷰 | 주로 쓰는 도구 |
 |---|---|---|---|
-| ① 입력 구조 개편 | TODO | TODO | TODO |
-| ② 테스트 환경 | TODO | TODO | TODO |
-| ③ 제출/중계 | TODO | TODO | TODO |
-| ④ 스킬/에셋 | TODO | TODO | TODO |
+| ① 입력 구조 개편 | 팀장 + Claude Code | 팀장 | Claude Code |
+| ② 테스트 환경 | 팀장 + Claude Code | 팀장 | Claude Code |
+| ③ 제출/중계 | 팀장 + Claude Code | 팀장 | Claude Code |
+| ④ 스킬/에셋 | 팀장 + Claude Code | 팀장 | Claude Code |
 
 ## 5. 코딩 컨벤션 / 명령어
 
