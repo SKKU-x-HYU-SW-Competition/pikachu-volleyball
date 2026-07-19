@@ -1,6 +1,7 @@
 {
   "env": {
     "browser": true,
+    "worker": true,
     "es6": true,
     "node": true
   },
@@ -10,7 +11,7 @@
     "SharedArrayBuffer": "readonly"
   },
   "parserOptions": {
-    "ecmaVersion": 2015,
+    "ecmaVersion": 2020,
     "sourceType": "module"
   },
   "plugins": ["prettier"],

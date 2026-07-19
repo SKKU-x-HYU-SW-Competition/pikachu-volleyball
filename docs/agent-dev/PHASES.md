@@ -15,7 +15,7 @@
 
 ## Phase 1 — 입력 구조 개편
 
-**목표**: `PikaUserInput`을 상속하는 새 입력 클래스(가칭 `PikaAgentInput`)를 만들어, 참가자가 제출한
+**목표**: `PikaUserInput`을 상속하는 새 입력 클래스(`PikaBotInput`)를 만들어, 참가자가 제출한
 "매 틱 입력을 결정하는 코드 조각"을 게임 시작 전에 등록해두고, 그 코드가 매 틱 호출되어
 `xDirection`/`yDirection`/`powerHit`를 채우도록 만든다. 사람이 키보드로 조작하는 기존 `PikaKeyboard`와
 동일한 자리(`keyboardArray`)에 꽂을 수 있어야 한다.
@@ -26,11 +26,15 @@
 [`pikavolley.js:120-140`](../../src/resources/js/pikavolley.js#L120-L140) (`gameLoop`, 매 틱 `getInput()` 호출부).
 
 **단계**:
-1. `stub 확정`: [CONTRACTS.md](CONTRACTS.md) §1(입출력 프로토콜), §2(틱 타이밍)를 팀 리뷰에서 확정 (또는 DRAFT로 남기고 D-001/D-002/D-003 해소).
-2. `codegen`: 스냅샷 빌더 + `PikaAgentInput` 클래스의 시그니처만 있는 뼈대 작성 (내부 로직은 TODO로 비워둠).
-3. `구현`: 실제 스냅샷 생성, 참가자 코드 호출/타임아웃 처리, `keyboardArray`에 꽂는 배선 완료.
+1. `stub 확정`: [CONTRACTS.md](CONTRACTS.md) §1(입출력 프로토콜), §2(틱 타이밍)를 팀 리뷰에서 확정. **완료** — D-001~D-003, D-006~D-009 모두 RESOLVED.
+2. `codegen` → `구현`: 스냅샷 빌더, `PikaBotInput`(Worker 격리 + 타임아웃/무입력 폴백 + 강제 재시작), Worker 쪽 실행기까지 한 번에 구현. **완료**:
+   - [`bot/botContract.js`](../../src/resources/js/bot/botContract.js) — 상수 + `buildGameStateSnapshot` + `isValidBotAction`
+   - [`bot/botWorker.js`](../../src/resources/js/bot/botWorker.js) — Worker 쪽 봇 실행기
+   - [`bot/botInput.js`](../../src/resources/js/bot/botInput.js) — `PikaBotInput` (`PikaUserInput` 상속, `keyboardArray` 원소로 그대로 교체 가능)
+   - `keyboardArray`에 꽂는 배선: [`bot/devBotHook.js`](../../src/resources/js/bot/devBotHook.js) — **임시** 쿼리 파라미터(`?bot=left|right|both`) 기반 훅. Phase 2가 진짜 선택 UI를 만들면 이 파일은 지우고 그 UI가 같은 방식(`keyboardArray[i] = new PikaBotInput(...)`)으로 교체하면 됨.
+3. **검증**: `npm run lint`/`npm run build` 통과 확인 + Playwright로 실제 브라우저에서 `?bot=right`로 기동, 메뉴에서 "with friend" 선택 후 라운드 진입, `player2.isComputer === false` 및 `player2.x/state`가 시간에 따라 변하는 것(체이스 → 점프 → 파워히트, state 0→1→2)을 실측 확인, 콘솔 에러 없음 확인. 스크린샷으로 실제 파워히트 이펙트까지 시각 확인.
 
-**상태**: 미착수
+**상태**: **완료 (1차 구현 + 브라우저 검증됨)**. 남은 건 Phase 2에서 `devBotHook.js`를 실제 UI로 교체하는 것.
 
 ---
 

@@ -11,6 +11,7 @@ CI가 없으므로, 이 로그가 "누가 뭘 했는지"를 공유하는 유일�
 
 | 날짜 | 커밋 해시 | 작성자 (도구) | Phase | 요약 | 관련 문서 |
 |---|---|---|---|---|---|
+| 2026-07-11 | (커밋 전) | 팀장 (Claude Code) | ① 입력 구조 | Phase 1 구현 완료: `bot/botContract.js`(스냅샷 빌더/상수), `bot/botWorker.js`(Worker 실행기), `bot/botInput.js`(`PikaBotInput`), 임시 dev 와이어링 `bot/devBotHook.js` + `main.js` 연결. 구현 중 D-009(메인 스레드가 Worker 응답을 그 틱 안에 동기 대기 불가) 발견·반영. `npm run lint`/`build` 통과, Playwright로 실제 브라우저에서 `?bot=right` 기동 → 봇이 자율적으로 공을 쫓아가 점프+파워히트(state 0→1→2)하는 것을 스크린샷/상태값으로 확인 | CONTRACTS.md v0.4, DECISIONS.md D-009 RESOLVED(확인 요망), PHASES.md Phase 1 완료 |
 | 2026-07-10 | (커밋 전) | 팀장 (Claude Code) | - | D-004(제출 인프라: 이메일+수동 로드 가정) / D-005(현재 스레드 기준 오너십: 팀장+Claude Code) 결정 및 반영. DECISIONS.md OPEN 항목 소진, AGENTS.md §4 담당자 표 채움 | DECISIONS.md D-004/D-005 RESOLVED, AGENTS.md §4 |
 | 2026-07-07 | (커밋 전) | Claude Code (사용자 승인) | ① 입력 구조 | D-001(틱 그룹핑=1 확정)/D-002(타임아웃·오반환 시 무입력)/D-003(Worker 격리) 결정 및 반영. CONTRACTS.md에 §1.3(실행 모델) 신설 | CONTRACTS.md v0.3, DECISIONS.md D-001/D-002/D-003 RESOLVED |
 | 2026-07-07 | (커밋 전) | YoonJinJung (Claude Code) | ① 입력 구조 | 브레인스토밍한 봇 프로토콜을 엔진 코드와 대조 검토. 출력을 4-bit(left/right/jump/spike)→엔진과 1:1인 3필드(x/y/hit)로 변경, 좌표계는 원본 정수 픽셀 그대로 확정, `expectedLandingPointX` 노출 확정, 세트제 미도입 확정 | CONTRACTS.md v0.2, DECISIONS.md D-006/D-007/D-008 RESOLVED |

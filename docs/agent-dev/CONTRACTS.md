@@ -1,6 +1,6 @@
 # CONTRACTS.md — 봇 입출력 프로토콜 & 틱 타이밍 (SOR)
 
-> **상태: DRAFT v0.3 — 아직 구현 전.** 이 문서가 이 프로토콜의 단일 진실 소스입니다.
+> **상태: DRAFT v0.4 — Phase 1 구현 진행 중** (`src/resources/js/bot/`). 이 문서가 이 프로토콜의 단일 진실 소스입니다.
 > Phase 1(입력 구조 개편) 구현 코드는 이 문서에 정의된 필드/의미론과 항상 일치해야 하며,
 > 반대로 구현하다가 이 문서와 다르게 가야 한다는 게 밝혀지면 **코드부터 바꾸지 말고
 > 먼저 이 문서를 갱신 + 버전을 올리고 [DECISIONS.md](DECISIONS.md)에 사유를 남긴 뒤** 코드를 바꾸세요.
@@ -13,9 +13,10 @@
 
 봇 입출력 형식, enum 값, 틱 길이 같은 상수가 `pikavolley.js`, `physics.js`, 테스트 환경,
 제출/중계 도구 등 여러 곳에 흩어져 각자 다르게 정의되면 트랙 간(특히 서로 다른 에이전트 도구를
-쓰는 담당자 간) 구현이 어긋납니다. **이 값들은 이 문서에서만 정의하고, 실제 코드는 여기서 import/참조만
-하도록 만드세요** (구현 단계에서 예: `src/resources/js/agentContract.js` 같은 단일 모듈에 상수/타입을
-박아넣고, 다른 모든 모듈은 거기서 가져다 씀 — 같은 값을 두 번 정의하지 말 것).
+쓰는 담당자 간) 구현이 어긋납니다. **이 값들은 이 문서에서만 정의하고, 실제 코드는 여기서 import/참조만 하도록 만드세요**
+— 구현: [`src/resources/js/bot/botContract.js`](../../src/resources/js/bot/botContract.js) 단일
+모듈에 상수/스냅샷 빌더를 박아넣고, 다른 모든 모듈은 거기서 가져다 씁니다 (같은 값을 두 번 정의하지
+말 것).
 
 ## 1. 봇 입출력 프로토콜
 
@@ -34,12 +35,21 @@
 ([AGENTS.md](../../AGENTS.md) §2 참고).
 
 ```
-매 tick:
-  snapshot = buildGameStateSnapshot(physics, frameInfo)     // 엔진 → 봇
-  postMessage(worker, snapshot)                             // 메인 스레드 → 봇 Worker (D-003, §1.3)
-  { x, y, hit } = await response within timeout, else neutral // 봇 Worker → 메인 스레드 (D-002)
-  그대로 xDirection/yDirection/powerHit로 전달
+매 tick (getInput()):
+  xDirection, yDirection, powerHit = latestAction   // 가장 최근에 도착한 봇 응답을 동기 적용 (D-009)
+  if tick % tickFrameGroupSize === 0 and no request pending:
+    snapshot = buildGameStateSnapshot(physics, side, meta)   // 엔진 → 봇
+    postMessage(worker, { requestId, snapshot })              // 메인 스레드 → 봇 Worker, 비동기 (D-003, §1.3)
+    // 응답은 나중에 worker.onmessage로 도착 → latestAction 갱신 (§1.3)
+    // 타임아웃 안에 응답이 없으면 latestAction = neutral (D-002)
 ```
+
+**메인 스레드는 이 틱 안에서 봇의 응답을 기다리지 않습니다** (결정: D-009, 구현 중 발견). 브라우저는
+메인(UI) 스레드에서 `Atomics.wait` 같은 블로킹 대기를 허용하지 않고, `postMessage`는 본질적으로
+비동기이기 때문에, "요청을 보내고 그 자리에서 동기적으로 응답을 받는" 것 자체가 불가능합니다. 그래서
+`getInput()`은 **가장 최근에 도착한 응답**을 적용하고, 이번 틱의 요청은 백그라운드로 흘려보냅니다.
+결과적으로 봇의 반응에는 대략 1틱(`tickFrameGroupSize`가 1이면 ~40ms) 정도의 파이프라인 지연이
+항상 존재합니다 — 버그가 아니라 구조적 특성입니다. 구현: [`bot/botInput.js`](../../src/resources/js/bot/botInput.js).
 
 ### 1.1 봇 출력 (봇 → 엔진)
 
@@ -136,6 +146,12 @@
   필요하다고 판단되면 이 섹션을 갱신하세요.
 - Worker 간 메시지 패싱에는 약간의 오버헤드가 있습니다 — §2의 틱 예산과 함께 Phase 2(테스트 환경)
   구현 시 실측하세요.
+- 위 통신은 전부 **비동기**입니다 (`postMessage`에는 동기 응답 대기 수단이 없음) — §1.0의 D-009 참고.
+  구현에서는 매 요청에 `requestId`를 붙여, 타임아웃으로 이미 폐기된 요청의 뒤늦은 응답이나 재시작
+  전 Worker의 응답이 최신 상태를 덮어쓰지 않도록 막습니다.
+- 구현: [`bot/botContract.js`](../../src/resources/js/bot/botContract.js)(상수/스냅샷 빌더),
+  [`bot/botWorker.js`](../../src/resources/js/bot/botWorker.js)(Worker 쪽 실행기),
+  [`bot/botInput.js`](../../src/resources/js/bot/botInput.js)(`PikaBotInput`, `PikaUserInput` 상속).
 
 ## 2. 타이밍 / 틱 상수
 
@@ -156,7 +172,7 @@
 스레드가 멈추는 것)은 틱을 늘려도 해결되지 않으므로 §1.3(D-003, Worker 격리)와 D-002(무입력 폴백)로
 따로 대응합니다. 나중에 학습 기반 봇의 매틱 추론 비용이 Phase 2 실측에서 실제로 문제가 되면 그때
 `tickFrameGroupSize`를 올리는 쪽으로 재논의하세요 — 지금은 값 자체는 확정이지만, 상수로 빼두고
-(`agentContract.js`의 `TICK_FRAME_GROUP_SIZE`처럼) 하드코딩하지 않아 나중에 바꾸기 쉽게 해두는 것까지가
+([`bot/botContract.js`](../../src/resources/js/bot/botContract.js)의 `TICK_FRAME_GROUP_SIZE`처럼) 하드코딩하지 않아 나중에 바꾸기 쉽게 해두는 것까지가
 이번 결정의 일부입니다.
 
 시간초과/잘못된 반환값 처리는 §1.1에서 무입력으로 확정했습니다 (D-002).
@@ -168,3 +184,4 @@
 | v0.1 | 2026-07-07 | (agent-settings 초기 세팅) | 최초 작성. 프로토콜/타이밍 모두 DRAFT, 구현 전 |
 | v0.2 | 2026-07-07 | (agent-settings 초기 세팅) | 용어를 "에이전트"→"bot"으로 통일. 출력을 4-bit(`left/right/jump/spike`)에서 엔진과 1:1 대응하는 3필드(`x/y/hit`)로 변경. 좌표계를 원본 정수 픽셀 그대로 쓰기로 확정(D-007). `expectedLandingPointX` 노출 확정(D-006). 세트제 미도입 확정, `meta.set/max_set` 제거(D-008). `decision_interval_ms`/`max_response_ms`를 `config.tickFrameGroupSize` 하나로 통합 |
 | v0.3 | 2026-07-07 | Claude Code (사용자 승인) | `tickFrameGroupSize = 1` 확정(D-001). 시간초과/잘못된 반환값 처리를 무입력으로 확정(D-002). 실행 모델을 Web Worker 격리(+타임아웃+강제종료 후 재시작)로 확정(D-003), §1.3 신설 |
+| v0.4 | 2026-07-11 | Claude Code (구현 중 발견 — 사용자 확인 요망) | Phase 1 실제 구현(`src/resources/js/bot/`) 진행 중 발견: 메인 스레드가 Worker 응답을 그 틱 안에 동기 대기할 수 없음(브라우저가 `Atomics.wait`를 메인 스레드에서 막음) → fire-and-forget + "최근 응답 사용" 패턴으로 확정, 약 1틱 파이프라인 지연을 구조적 특성으로 문서화(D-009). §1.0/§1.3에 반영, 구현 파일 링크 추가 |
