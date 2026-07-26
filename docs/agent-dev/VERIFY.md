@@ -42,7 +42,7 @@ npx http-server dist
 
 1. 코드를 먼저 확정하지 말고,
 2. CONTRACTS.md를 갱신 + 버전을 올리고,
-3. [DECISIONS.md](DECISIONS.md)에 왜 바뀌었는지 기록한 뒤,
+3. `docs/agent-dev/decisions/ADR-NNNN-slug.md` 새 파일로 왜 바뀌었는지 기록하고 [DECISIONS.md](DECISIONS.md) 인덱스에 추가한 뒤,
 4. 코드를 그에 맞게 마무리하세요.
 
 ### 5. 기록

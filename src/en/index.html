@@ -190,6 +190,9 @@
               </button>
             </div>
           </div>
+          <button type="button" id="bot-setup-btn" class="btn" disabled>
+            Bot Setup
+          </button>
           <div class="color-scheme-toggle-switch-container">
             <input
               type="checkbox"
@@ -376,6 +379,70 @@
               </button>
             </div>
             <div class="for-margin"></div>
+          </div>
+        </div>
+        <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
+          <h1>Bot Test Setup</h1>
+          <p class="small">
+            Left / right side each independently: keyboard, your bot code, or
+            the built-in AI. Settings apply after you click Apply, which
+            restarts the game.
+          </p>
+          <div class="bot-setup-columns">
+            <div class="bot-setup-side">
+              <p class="thick">Left side (Player 1)</p>
+              <div class="bot-setup-mode-group" id="bot-setup-left-mode">
+                <button type="button" class="btn selected" data-mode="keyboard">
+                  <span class="check">&check; </span>Keyboard
+                </button>
+                <button type="button" class="btn" data-mode="bot">
+                  <span class="check">&check; </span>Bot code
+                </button>
+                <button type="button" class="btn" data-mode="ai">
+                  <span class="check">&check; </span>Built-in AI
+                </button>
+              </div>
+              <textarea
+                id="bot-setup-left-source"
+                class="bot-setup-textarea"
+                placeholder="Paste bot code here (must define a decide(snapshot) function)"
+              ></textarea>
+              <button type="button" id="bot-setup-left-example-btn" class="btn-in-box">
+                Load example bot
+              </button>
+              <p id="bot-setup-left-status" class="bot-setup-status"></p>
+            </div>
+            <div class="bot-setup-side">
+              <p class="thick">Right side (Player 2)</p>
+              <div class="bot-setup-mode-group" id="bot-setup-right-mode">
+                <button type="button" class="btn selected" data-mode="keyboard">
+                  <span class="check">&check; </span>Keyboard
+                </button>
+                <button type="button" class="btn" data-mode="bot">
+                  <span class="check">&check; </span>Bot code
+                </button>
+                <button type="button" class="btn" data-mode="ai">
+                  <span class="check">&check; </span>Built-in AI
+                </button>
+              </div>
+              <textarea
+                id="bot-setup-right-source"
+                class="bot-setup-textarea"
+                placeholder="Paste bot code here (must define a decide(snapshot) function)"
+              ></textarea>
+              <button type="button" id="bot-setup-right-example-btn" class="btn-in-box">
+                Load example bot
+              </button>
+              <p id="bot-setup-right-status" class="bot-setup-status"></p>
+            </div>
+          </div>
+          <div class="bot-setup-actions">
+            <button type="button" id="bot-setup-apply-btn" class="btn-in-box glow">
+              Apply (restart)
+            </button>
+            <button type="button" id="bot-setup-close-btn" class="btn-in-box">
+              Close
+            </button>
           </div>
         </div>
         <div class="fade-in-box notice hidden" id="notice-box-1">

@@ -63,9 +63,9 @@ MVC 패턴이며 세 축:
 - **진입점**: 어떤 도구를 쓰든 `CLAUDE.md`/`AGENTS.md` 중 무엇을 먼저 읽든 결국 이 파일로 오게 됩니다. 규칙은 이 파일 하나에만 적으세요. 도구별 파일에 별도 규칙을 추가하지 마세요.
 - **세션 시작**: [KICKOFF.md](docs/agent-dev/KICKOFF.md)의 프롬프트를 복붙해서 시작하세요. 매번 컨텍스트를 처음부터 설명하지 않기 위한 장치입니다.
 - **검증은 로컬에서, 리뷰는 정기 회의에서**: 이 프로젝트는 CI/CD를 두지 않기로 했습니다(자동화보다 대면 코드리뷰를 우선). 대신 커밋 전 [VERIFY.md](docs/agent-dev/VERIFY.md) 체크리스트를 로컬에서 직접 돌리고, [TRACKER.md](docs/agent-dev/TRACKER.md)에 기록을 남겨 회의 때 그걸 보고 리뷰합니다.
-- **모르는 건 멋대로 정하지 않기**: 스펙이 불확실하면 그 자리에서 결정하지 말고 최소한의 stub(임시 기본값)으로 막아두고 [DECISIONS.md](docs/agent-dev/DECISIONS.md)에 등재하세요. 특히 `CONTRACTS.md`에 있는 값(틱 길이, 입출력 프로토콜 등)은 검증 과정에서 바뀔 수 있다고 이미 논의됨 — 혼자 확정 짓지 말 것.
+- **모르는 건 멋대로 정하지 않기**: 스펙이 불확실하면 그 자리에서 결정하지 말고 최소한의 stub(임시 기본값)으로 막아두고 `docs/agent-dev/decisions/ADR-NNNN-slug.md` 새 파일로 등재하세요 (절차는 [DECISIONS.md](docs/agent-dev/DECISIONS.md) 인덱스 참고 — 결정 하나당 파일 하나라 여러 명이 동시에 작업해도 merge conflict가 안 납니다). 특히 `CONTRACTS.md`에 있는 값(틱 길이, 입출력 프로토콜 등)은 검증 과정에서 바뀔 수 있다고 이미 논의됨 — 혼자 확정 짓지 말 것.
 - **트랙 담당(오너십)**: 아래 표는 현재 이 스레드/세션에서 진행 중인 작업 기준입니다 (결정:
-  [DECISIONS.md](docs/agent-dev/DECISIONS.md) D-005). 다른 공동 운영진이 합류하면 트랙별로
+  [ADR-0005](docs/agent-dev/decisions/ADR-0005-team-roster-ownership.md)). 다른 공동 운영진이 합류하면 트랙별로
   담당/리뷰/도구를 다시 채우세요 — 이 저장소는 원래 여러 명이 각자 다른 도구를 쓰는 걸 전제로 하므로,
   아래는 최종 로스터가 아니라 지금 시점의 스냅샷입니다.
 
@@ -76,20 +76,40 @@ MVC 패턴이며 세 축:
 | ③ 제출/중계 | 팀장 + Claude Code | 팀장 | Claude Code |
 | ④ 스킬/에셋 | 팀장 + Claude Code | 팀장 | Claude Code |
 
-## 5. 코딩 컨벤션 / 명령어
+## 5. 브랜치 전략 & 이슈 트래킹
+
+- **`main`**: 항상 배포 가능한 상태만 유지합니다. 직접 커밋/푸시하지 마세요 — `develop`을 릴리즈할
+  준비가 됐을 때만 `develop → main`으로 merge합니다.
+- **`develop`**: 통합 브랜치. 모든 feature 브랜치는 여기서 분기하고, 작업이 끝나면 여기로 다시
+  merge합니다. 대회 준비 기간 동안의 "현재 진행 중인 최신 상태"는 항상 이 브랜치입니다.
+- **`feature/<이슈번호>-<짧은-설명>`**: 실제 작업 단위. 예: `feature/12-bot-submission-form`.
+  - 작업 시작 전 GitHub Issue를 먼저 만들거나(또는 기존 이슈를 확인하고) 브랜치 이름에 이슈 번호를
+    넣으세요 — 이슈만 보면 이 브랜치가 왜 존재하는지 알 수 있게 하기 위함입니다.
+  - `develop`에서 분기하고, 작업이 끝나면 PR로 `develop`에 merge하세요. PR 설명에 `Closes #12`처럼
+    적어서 머지 시 이슈가 자동으로 닫히게 하세요.
+  - PR 단위가 [DECISIONS.md](docs/agent-dev/DECISIONS.md)의 새 ADR과 관련 있다면 PR 설명에
+    ADR 번호도 함께 적으세요 (리뷰어가 "왜 이렇게 짰는지" 바로 찾아갈 수 있게).
+- **리뷰**: CI가 없으므로(§4 참고) PR을 열기 전에
+  [VERIFY.md](docs/agent-dev/VERIFY.md) 체크리스트를 로컬에서 통과시키고, 실제 리뷰는 정기 회의에서
+  [TRACKER.md](docs/agent-dev/TRACKER.md) 기록을 보며 진행합니다.
+- 이 정책은 팀장이 확정한 기본 골격입니다. 세부 컨벤션(브랜치명 규칙, PR 템플릿 등)이 실제 운영과
+  안 맞으면 이 섹션을 갱신하세요 — 임의로 다르게 운영하지 말고 이 파일부터 고칠 것.
+
+## 6. 코딩 컨벤션 / 명령어
 
 - Lint: `eslint:recommended` + prettier(`singleQuote`) — 설정은 [`.eslintrc.json`](.eslintrc.json), [`.prettierrc.json`](.prettierrc.json).
 - 빌드: `npm run build` (webpack), 개발 서버: `npm start` (`webpack serve --config webpack.dev.js`).
 - 아직 자동화된 테스트 스위트는 없습니다. 추가하게 되면 이 섹션과 VERIFY.md를 함께 갱신하세요.
 - 커밋 전 반드시 [VERIFY.md](docs/agent-dev/VERIFY.md) 체크리스트를 실행하세요 (`npm run verify` 스크립트 참고).
 
-## 6. 문서 지도
+## 7. 문서 지도
 
 | 파일 | 역할 |
 |---|---|
+| [docs/agent-dev/TEAM_ONBOARDING.md](docs/agent-dev/TEAM_ONBOARDING.md) | 협업/개발 환경 전체를 처음 접하는 팀원용 요약 (코드 내용 아님) |
 | [docs/agent-dev/CONTRACTS.md](docs/agent-dev/CONTRACTS.md) | 에이전트 입출력 프로토콜, 틱 타이밍 상수 — SOR, DRAFT |
 | [docs/agent-dev/PHASES.md](docs/agent-dev/PHASES.md) | 트랙별 세부 Phase 계획 (stub 확정 → codegen → 구현) |
 | [docs/agent-dev/KICKOFF.md](docs/agent-dev/KICKOFF.md) | 세션 시작용 킥오프 프롬프트 템플릿 |
 | [docs/agent-dev/VERIFY.md](docs/agent-dev/VERIFY.md) | 커밋 전 로컬 검증 체크리스트 |
 | [docs/agent-dev/TRACKER.md](docs/agent-dev/TRACKER.md) | 커밋 해시 + 요약 기록 (회의 준비용) |
-| [docs/agent-dev/DECISIONS.md](docs/agent-dev/DECISIONS.md) | 미확정 사항 백로그 (stub 처리한 것들의 등록부) |
+| [docs/agent-dev/DECISIONS.md](docs/agent-dev/DECISIONS.md) | 결정 인덱스 — 실제 내용은 `docs/agent-dev/decisions/ADR-NNNN-*.md` 파일 하나당 하나 |

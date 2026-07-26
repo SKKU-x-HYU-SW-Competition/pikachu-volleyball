@@ -28,14 +28,18 @@ export class PikaBotInput extends PikaUserInput {
    * @param {function(): {scores: number[], isPlayer2Serve: boolean}} args.getMeta
    * @param {string} args.botSource bot's source code; must define a
    *   top-level `decide(snapshot)` function (see botWorker.js)
+   * @param {function({ok: boolean, error: (string|undefined)}): void} [args.onInitResult]
+   *   called once when the Worker finishes (re-)loading botSource -- lets UI
+   *   surface "bot code loaded" vs "syntax error: ..." to a human tester.
    */
-  constructor({ side, physics, getMeta, botSource }) {
+  constructor({ side, physics, getMeta, botSource, onInitResult }) {
     super();
 
     this.side = side;
     this.physics = physics;
     this.getMeta = getMeta;
     this.botSource = botSource;
+    this.onInitResult = onInitResult || null;
 
     /** @type {number} monotonically increasing tick counter for this input */
     this.tick = 0;
@@ -85,9 +89,15 @@ export class PikaBotInput extends PikaUserInput {
   }
 
   /**
-   * @param {{type: string, requestId?: number, action?: Object, ok?: boolean}} message
+   * @param {{type: string, requestId?: number, action?: Object, ok?: boolean, error?: string}} message
    */
   handleWorkerMessage(message) {
+    if (message.type === 'initResult') {
+      if (this.onInitResult) {
+        this.onInitResult({ ok: message.ok, error: message.error });
+      }
+      return;
+    }
     if (message.type !== 'result') {
       return;
     }

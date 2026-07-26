@@ -43,7 +43,7 @@ import '@pixi/canvas-display';
 import { PikachuVolleyball } from './pikavolley.js';
 import { ASSETS_PATH } from './assets_path.js';
 import { setUpUI } from './ui.js';
-import { maybeAttachDevBot } from './bot/devBotHook.js';
+import { setUpBotTestUI } from './bot/testSetup.js';
 
 // Reference for how to use Renderer.registerPlugin:
 // https://github.com/pixijs/pixijs/blob/af3c0c6bb15aeb1049178c972e4a14bb4cabfce4/bundles/pixi.js/src/index.ts#L27-L34
@@ -145,7 +145,7 @@ function setUpInitialUI() {
 function setup() {
   const pikaVolley = new PikachuVolleyball(stage, loader.resources);
   setUpUI(pikaVolley, ticker);
-  maybeAttachDevBot(pikaVolley, ticker); // Phase 1 smoke-test hook, see bot/devBotHook.js
+  setUpBotTestUI(pikaVolley, ticker); // Phase 2 test environment, see bot/testSetup.js
   start(pikaVolley);
 }
 

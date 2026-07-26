@@ -34,24 +34,45 @@
    - `keyboardArray`에 꽂는 배선: [`bot/devBotHook.js`](../../src/resources/js/bot/devBotHook.js) — **임시** 쿼리 파라미터(`?bot=left|right|both`) 기반 훅. Phase 2가 진짜 선택 UI를 만들면 이 파일은 지우고 그 UI가 같은 방식(`keyboardArray[i] = new PikaBotInput(...)`)으로 교체하면 됨.
 3. **검증**: `npm run lint`/`npm run build` 통과 확인 + Playwright로 실제 브라우저에서 `?bot=right`로 기동, 메뉴에서 "with friend" 선택 후 라운드 진입, `player2.isComputer === false` 및 `player2.x/state`가 시간에 따라 변하는 것(체이스 → 점프 → 파워히트, state 0→1→2)을 실측 확인, 콘솔 에러 없음 확인. 스크린샷으로 실제 파워히트 이펙트까지 시각 확인.
 
-**상태**: **완료 (1차 구현 + 브라우저 검증됨)**. 남은 건 Phase 2에서 `devBotHook.js`를 실제 UI로 교체하는 것.
+**상태**: **완료 (1차 구현 + 브라우저 검증됨)**. `devBotHook.js`는 Phase 2에서 실제 UI(`testSetup.js`)로
+교체되어 삭제됨.
 
 ---
 
 ## Phase 2 — 테스트 환경
 
-**목표**: 참가자가 대회 준비 기간과 현장에서 **(a) 자기 에이전트 코드 vs 자기 키보드 입력**,
-**(b) 자기 에이전트 코드 vs 기본 탑재 AI**로 즉시 붙어볼 수 있는 환경. 코드 수정 → 결과 확인
-루프를 자주 돌릴 것이므로 UX가 최우선.
+**목표**: 참가자가 대회 준비 기간과 현장에서 좌/우 진영을 각각 자유롭게
+**[키보드 | 내 봇 코드 | 기본 탑재 AI]** 중 하나로 정해서 어떤 조합으로도 붙어볼 수 있는 환경
+(봇 vs 내 키보드, 봇 vs 기본 AI, 봇 vs 봇 등). 코드 수정 → 결과 확인 루프를 자주 돌릴 것이므로
+UX가 최우선.
 
-**의존성**: Phase 1 완료 필요 (에이전트를 꽂을 자리가 있어야 함).
+**의존성**: Phase 1 완료 필요 (봇을 꽂을 자리가 있어야 함) — 충족됨.
+
+**결정**: 봇 코드는 텍스트 붙여넣기(파일 업로드 아님), 설정 변경은 "적용" 클릭 시 `restart()`로만
+반영(핫스왑 아님), 설정은 localStorage에 저장(새로고침해도 유지) — 세 가지 모두 사용자 승인.
 
 **단계**:
-1. `stub 확정`: 에이전트 코드를 로드하는 방식(파일 선택 업로드 / 코드 붙여넣기 / 로컬 파일 감시) 중 무엇을 쓸지, player1/player2 각각 [키보드 | 기본 AI | 내 에이전트]를 선택하는 UI 형태를 확정.
-2. `codegen`: 로더 + 선택 UI 뼈대.
-3. `구현`: 실제 동작 + 에러 처리(에이전트 코드가 예외를 던지면 게임이 멈추지 않게).
+1. `stub 확정`: 위 결정대로 확정.
+2. `codegen` → `구현`: 한 번에 구현. 결과물:
+   - [`bot/nullInput.js`](../../src/resources/js/bot/nullInput.js) — "기본 AI" 슬롯용 no-op 입력
+     (엔진이 `isComputer===true`일 때 입력을 통째로 덮어쓰므로 실제 값은 필요 없음)
+   - [`bot/testSetup.js`](../../src/resources/js/bot/testSetup.js) — 좌우 3-way 모드 선택,
+     localStorage 저장/복원, "적용 시 재시작 후 다음 라운드 시작 시점에 배선" 패턴(Phase 1의
+     `devBotHook.js`와 동일 기법, 재사용 가능하게 일반화)
+   - `bot/botInput.js`에 `onInitResult` 콜백 추가 — 봇 코드 문법 오류 등을 패널에 상태로 표시
+     (`봇 코드 로드됨` / `에러: ...`)
+   - `en/ko/zh index.html` + `style.css` — "Bot Setup" 패널 (메뉴바 버튼 + fade-in-box, textarea
+     2개, 모드 선택 버튼 6개, 예제 불러오기, 적용/닫기)
+   - 패널 내부에서 타이핑한 키(z/d/g/r/v/f 등)가 게임 키 입력으로 새는 걸 막기 위해
+     `keydown`/`keyup`에 `stopPropagation()` 적용
+   - `devBotHook.js` 삭제 (역할을 `testSetup.js`가 대체)
+3. **검증**: `npm run lint`/`npm run build` 통과. Playwright로 세 조합
+   (키보드 vs 봇, 기본AI vs 봇, 봇 vs 봇) 실제 브라우저에서 각각 라운드 진입 후
+   `isComputer` 플래그와 좌표가 기대대로 나오는지, 상태 표시가 정상인지 확인. localStorage
+   저장/복원(새로고침 후 패널을 안 만져도 이전 설정이 자동 재적용되는지)도 별도 확인.
+   구현 중 발견한 버그는 [DECISIONS.md](DECISIONS.md) D-010 참고.
 
-**상태**: 미착수
+**상태**: **완료 (1차 구현 + 브라우저 검증됨)**
 
 ---
 

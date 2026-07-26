@@ -190,6 +190,9 @@
               </button>
             </div>
           </div>
+          <button type="button" id="bot-setup-btn" class="btn" disabled>
+            봇 설정
+          </button>
           <div class="color-scheme-toggle-switch-container">
             <input
               type="checkbox"
@@ -374,6 +377,70 @@
               </button>
             </div>
             <div class="for-margin"></div>
+          </div>
+        </div>
+        <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
+          <h1>봇 테스트 설정</h1>
+          <p class="small">
+            왼쪽/오른쪽 진영을 각각 독립적으로 키보드, 내 봇 코드, 기본
+            탑재 AI 중 하나로 정할 수 있습니다. 설정은 "적용"을 눌러야
+            반영되며, 이때 게임이 재시작됩니다.
+          </p>
+          <div class="bot-setup-columns">
+            <div class="bot-setup-side">
+              <p class="thick">왼쪽 진영 (Player 1)</p>
+              <div class="bot-setup-mode-group" id="bot-setup-left-mode">
+                <button type="button" class="btn selected" data-mode="keyboard">
+                  <span class="check">&check; </span>키보드
+                </button>
+                <button type="button" class="btn" data-mode="bot">
+                  <span class="check">&check; </span>봇 코드
+                </button>
+                <button type="button" class="btn" data-mode="ai">
+                  <span class="check">&check; </span>기본 AI
+                </button>
+              </div>
+              <textarea
+                id="bot-setup-left-source"
+                class="bot-setup-textarea"
+                placeholder="여기에 봇 코드를 붙여넣으세요 (decide(snapshot) 함수를 정의해야 함)"
+              ></textarea>
+              <button type="button" id="bot-setup-left-example-btn" class="btn-in-box">
+                예제 봇 불러오기
+              </button>
+              <p id="bot-setup-left-status" class="bot-setup-status"></p>
+            </div>
+            <div class="bot-setup-side">
+              <p class="thick">오른쪽 진영 (Player 2)</p>
+              <div class="bot-setup-mode-group" id="bot-setup-right-mode">
+                <button type="button" class="btn selected" data-mode="keyboard">
+                  <span class="check">&check; </span>키보드
+                </button>
+                <button type="button" class="btn" data-mode="bot">
+                  <span class="check">&check; </span>봇 코드
+                </button>
+                <button type="button" class="btn" data-mode="ai">
+                  <span class="check">&check; </span>기본 AI
+                </button>
+              </div>
+              <textarea
+                id="bot-setup-right-source"
+                class="bot-setup-textarea"
+                placeholder="여기에 봇 코드를 붙여넣으세요 (decide(snapshot) 함수를 정의해야 함)"
+              ></textarea>
+              <button type="button" id="bot-setup-right-example-btn" class="btn-in-box">
+                예제 봇 불러오기
+              </button>
+              <p id="bot-setup-right-status" class="bot-setup-status"></p>
+            </div>
+          </div>
+          <div class="bot-setup-actions">
+            <button type="button" id="bot-setup-apply-btn" class="btn-in-box glow">
+              적용 (재시작)
+            </button>
+            <button type="button" id="bot-setup-close-btn" class="btn-in-box">
+              닫기
+            </button>
           </div>
         </div>
         <div class="fade-in-box notice hidden" id="notice-box-1">
