@@ -1,0 +1,45 @@
+# DECISIONS.md — 결정 인덱스 (ADR)
+
+스펙이 불확실할 때 **그 자리에서 임의로 정하지 않기 위한 장치**입니다. 결정 하나당 파일 하나
+(`docs/agent-dev/decisions/ADR-NNNN-slug.md`)로 관리합니다 — 여러 명이 동시에 작업할 때 한 파일
+끝부분에 계속 append하면 merge conflict가 잦기 때문에, 결정마다 별도 파일로 분리했습니다
+([ADR-0010](decisions/ADR-0010-bot-setup-double-listener-bug.md)까지는 원래 한 파일에 있던 걸
+이 구조로 옮긴 것). 이 파일은 무엇이 있는지 훑어보기 위한 **인덱스**일 뿐, 실제 내용은 각 ADR
+파일에 있습니다.
+
+## 새 결정을 추가하려면
+
+1. 최소한의 stub(임시 기본값)으로 막아서 작업을 계속하고,
+2. `docs/agent-dev/decisions/ADR-NNNN-slug.md` 새 파일을 만드세요. `NNNN`은 아래 표의 마지막 번호
+   + 1, 4자리로 0-패딩(`0011`). **다른 브랜치에서 동시에 같은 번호를 썼다면** 나중에 merge하는 쪽이
+   자기 번호를 다음 빈 번호로 바꾸세요 (드물게만 발생하고 고치기 쉬우므로 번호 예약 절차 같은 건
+   두지 않습니다).
+   - 상태가 아직 OPEN이라도(임시 stub만 있고 확정 전이라도) 파일은 만들어서 등록하세요 — "왜 막혔는지"만 적어도 됩니다.
+3. 실제로 결정되면 파일 상단 표의 `상태`를 `RESOLVED`로 바꾸고 `결정` 섹션을 채우세요 (파일을
+   지우지 마세요 — 왜 그렇게 정했는지가 나중에 중요해집니다).
+4. 아래 표에 한 줄 추가하세요.
+
+**개인이 임의로 RESOLVED 처리하지 말고, 정기 회의에서 결정한 뒤 반영하세요.**
+
+각 ADR 파일 상단에 상태/결정일/결정자/반영 위치를 적는 작은 표를 두는 형식으로 통일합니다 —
+기존 ADR 파일을 참고하세요.
+
+---
+
+## 목록
+
+| ID | 제목 | 상태 |
+|---|---|---|
+| [ADR-0001](decisions/ADR-0001-tick-frame-group-size.md) | 틱 길이 (몇 프레임 = 1 틱?) | RESOLVED |
+| [ADR-0002](decisions/ADR-0002-timeout-and-invalid-response.md) | 틱 시간초과(또는 잘못된 반환값) 시 처리 | RESOLVED |
+| [ADR-0003](decisions/ADR-0003-bot-execution-sandboxing.md) | 봇 코드 실행 방식 (샌드박싱 필요 여부) | RESOLVED |
+| [ADR-0004](decisions/ADR-0004-submission-infra.md) | 제출 인프라 | RESOLVED |
+| [ADR-0005](decisions/ADR-0005-team-roster-ownership.md) | 팀 로스터 / 트랙 오너십 | RESOLVED (부분) |
+| [ADR-0006](decisions/ADR-0006-expose-expected-landing-point.md) | `expectedLandingPointX`를 스냅샷에 노출할지 | RESOLVED |
+| [ADR-0007](decisions/ADR-0007-coordinate-system.md) | 좌표 변환 방식 | RESOLVED |
+| [ADR-0008](decisions/ADR-0008-no-set-system.md) | 세트제 도입 여부 | RESOLVED |
+| [ADR-0009](decisions/ADR-0009-worker-async-latency.md) | 메인 스레드가 봇 Worker 응답을 그 틱 안에 동기적으로 못 받는 문제 | RESOLVED (확인 요망) |
+| [ADR-0010](decisions/ADR-0010-bot-setup-double-listener-bug.md) | Bot Setup 패널 이중 리스너 버그 | RESOLVED |
+| [ADR-0011](decisions/ADR-0011-bot-setup-menu-navigation.md) | Bot Setup: 봇이 인트로/메뉴 내비게이션을 막는 버그 | RESOLVED |
+
+*(OPEN 항목 없음 — 새로 발견되는 미확정 사항은 위 절차대로 새 ADR 파일을 만들고 여기 추가하세요.)*

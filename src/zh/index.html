@@ -188,6 +188,9 @@
               </button>
             </div>
           </div>
+          <button type="button" id="bot-setup-btn" class="btn" disabled>
+            機器人設定
+          </button>
           <div class="color-scheme-toggle-switch-container">
             <input
               type="checkbox"
@@ -366,6 +369,69 @@
               </button>
             </div>
             <div class="for-margin"></div>
+          </div>
+        </div>
+        <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
+          <h1>機器人測試設定</h1>
+          <p class="small">
+            左右兩側可以各自獨立設定為鍵盤、你的機器人程式碼、或內建AI。
+            設定需按下「套用」才會生效，屆時遊戲將重新開始。
+          </p>
+          <div class="bot-setup-columns">
+            <div class="bot-setup-side">
+              <p class="thick">左側 (Player 1)</p>
+              <div class="bot-setup-mode-group" id="bot-setup-left-mode">
+                <button type="button" class="btn selected" data-mode="keyboard">
+                  <span class="check">&check; </span>鍵盤
+                </button>
+                <button type="button" class="btn" data-mode="bot">
+                  <span class="check">&check; </span>機器人程式碼
+                </button>
+                <button type="button" class="btn" data-mode="ai">
+                  <span class="check">&check; </span>內建AI
+                </button>
+              </div>
+              <textarea
+                id="bot-setup-left-source"
+                class="bot-setup-textarea"
+                placeholder="在此貼上機器人程式碼（需定義 decide(snapshot) 函式）"
+              ></textarea>
+              <button type="button" id="bot-setup-left-example-btn" class="btn-in-box">
+                載入範例機器人
+              </button>
+              <p id="bot-setup-left-status" class="bot-setup-status"></p>
+            </div>
+            <div class="bot-setup-side">
+              <p class="thick">右側 (Player 2)</p>
+              <div class="bot-setup-mode-group" id="bot-setup-right-mode">
+                <button type="button" class="btn selected" data-mode="keyboard">
+                  <span class="check">&check; </span>鍵盤
+                </button>
+                <button type="button" class="btn" data-mode="bot">
+                  <span class="check">&check; </span>機器人程式碼
+                </button>
+                <button type="button" class="btn" data-mode="ai">
+                  <span class="check">&check; </span>內建AI
+                </button>
+              </div>
+              <textarea
+                id="bot-setup-right-source"
+                class="bot-setup-textarea"
+                placeholder="在此貼上機器人程式碼（需定義 decide(snapshot) 函式）"
+              ></textarea>
+              <button type="button" id="bot-setup-right-example-btn" class="btn-in-box">
+                載入範例機器人
+              </button>
+              <p id="bot-setup-right-status" class="bot-setup-status"></p>
+            </div>
+          </div>
+          <div class="bot-setup-actions">
+            <button type="button" id="bot-setup-apply-btn" class="btn-in-box glow">
+              套用（重新開始）
+            </button>
+            <button type="button" id="bot-setup-close-btn" class="btn-in-box">
+              關閉
+            </button>
           </div>
         </div>
         <div class="fade-in-box notice hidden" id="notice-box-1">
