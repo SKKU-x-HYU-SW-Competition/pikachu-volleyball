@@ -2,10 +2,10 @@
 
 | | |
 |---|---|
-| 상태 | RESOLVED |
+| 상태 | SUPERSEDED (see [ADR-0016](ADR-0016-tick-frame-group-size-raised.md)) |
 | 결정일 | 2026-07-07 |
 | 결정자 | Claude Code (사용자 승인) |
-| 반영 | [CONTRACTS.md](../CONTRACTS.md) §2 |
+| 반영 | [CONTRACTS.md](../CONTRACTS.md) §2 (초기값 1) — 이후 5로 상향 (ADR-0016) |
 
 ## 배경 (왜 막혔는지)
 

@@ -30,7 +30,7 @@
 
 | ID | 제목 | 상태 |
 |---|---|---|
-| [ADR-0001](decisions/ADR-0001-tick-frame-group-size.md) | 틱 길이 (몇 프레임 = 1 틱?) | RESOLVED |
+| [ADR-0001](decisions/ADR-0001-tick-frame-group-size.md) | 틱 길이 (몇 프레임 = 1 틱?) | SUPERSEDED (→ ADR-0016) |
 | [ADR-0002](decisions/ADR-0002-timeout-and-invalid-response.md) | 틱 시간초과(또는 잘못된 반환값) 시 처리 | RESOLVED |
 | [ADR-0003](decisions/ADR-0003-bot-execution-sandboxing.md) | 봇 코드 실행 방식 (샌드박싱 필요 여부) | RESOLVED |
 | [ADR-0004](decisions/ADR-0004-submission-infra.md) | 제출 인프라 | RESOLVED |
@@ -41,5 +41,12 @@
 | [ADR-0009](decisions/ADR-0009-worker-async-latency.md) | 메인 스레드가 봇 Worker 응답을 그 틱 안에 동기적으로 못 받는 문제 | RESOLVED (확인 요망) |
 | [ADR-0010](decisions/ADR-0010-bot-setup-double-listener-bug.md) | Bot Setup 패널 이중 리스너 버그 | RESOLVED |
 | [ADR-0011](decisions/ADR-0011-bot-setup-menu-navigation.md) | Bot Setup: 봇이 인트로/메뉴 내비게이션을 막는 버그 | RESOLVED |
+| [ADR-0012](decisions/ADR-0012-multi-language-bot-support.md) | 다국어 봇 지원 방식 (브라우저 내 WASM) | RESOLVED |
+| [ADR-0013](decisions/ADR-0013-python-decide-signature.md) | Python 봇 진입점 시그니처 | RESOLVED |
+| [ADR-0014](decisions/ADR-0014-pyodide-distribution.md) | Pyodide 배포 방식 (정적 복사) | RESOLVED |
+| [ADR-0015](decisions/ADR-0015-pyodide-load-timing.md) | Pyodide 로드 타이밍 (Python 선택 시에만 지연 로드) | RESOLVED |
+| [ADR-0016](decisions/ADR-0016-tick-frame-group-size-raised.md) | TICK_FRAME_GROUP_SIZE 상향 (1 → 5) | RESOLVED |
+| [ADR-0017](decisions/ADR-0017-python-execution-failure.md) | Python 봇 실행 실패 처리 (D-002 확장) | RESOLVED |
+| [ADR-0018](decisions/ADR-0018-python-library-scope.md) | Python 봇 사용 가능 라이브러리 범위 (표준 + numpy) | RESOLVED |
 
 *(OPEN 항목 없음 — 새로 발견되는 미확정 사항은 위 절차대로 새 ADR 파일을 만들고 여기 추가하세요.)*

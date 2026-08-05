@@ -102,3 +102,42 @@ UX가 최우선.
 **단계**: 아직 stub도 확정 전. 착수 시점에 이 섹션을 채우세요.
 
 **상태**: 미착수
+
+---
+
+## Phase 5 — 다국어 봇 지원 (Python 우선)
+
+**목표**: 지금까지 JS로만 짤 수 있던 봇을 **Python**(1차)과 **C/C++**(향후)로도 짤 수 있게
+확장한다. 브라우저 내 WASM 방식([ADR-0012](decisions/ADR-0012-multi-language-bot-support.md))으로,
+현재의 Web Worker 격리/스냅샷 프로토콜은 그대로 유지하고 Worker 내부에서 돌아가는 러너만
+언어별로 갈아 끼운다. 이 브랜치(`python`)에서는 **Python만** 다룬다 — C/C++는 별도 브랜치/ADR로.
+
+**의존성**: Phase 1, Phase 2 완료 필요 (봇 프로토콜과 Bot Setup UI가 확장 대상).
+
+**관련 결정**:
+[ADR-0012](decisions/ADR-0012-multi-language-bot-support.md)(브라우저 내 WASM),
+[ADR-0013](decisions/ADR-0013-python-decide-signature.md)(Python `decide` 시그니처),
+[ADR-0014](decisions/ADR-0014-pyodide-distribution.md)(Pyodide 정적 복사),
+[ADR-0015](decisions/ADR-0015-pyodide-load-timing.md)(Python 선택 시 지연 로드),
+[ADR-0016](decisions/ADR-0016-tick-frame-group-size-raised.md)(TICK_FRAME_GROUP_SIZE 1→5),
+[ADR-0017](decisions/ADR-0017-python-execution-failure.md)(Python 실패 처리),
+[ADR-0018](decisions/ADR-0018-python-library-scope.md)(표준 라이브러리 + numpy).
+
+**단계**:
+1. `stub 확정`: 위 7개 ADR 팀장 결재 + [CONTRACTS.md](CONTRACTS.md) v0.5 갱신(§1.3에 언어별 러너
+   개념, §1.4 Python 진입점 시그니처, §2 TICK_FRAME_GROUP_SIZE 상향). **완료**.
+2. `codegen` → `구현`:
+   - `TICK_FRAME_GROUP_SIZE` 상향(`bot/botContract.js`) + JS 봇 회귀 확인
+   - Pyodide 정적 자산 배치(`npm i pyodide` + `copy-webpack-plugin`으로 `dist/pyodide/`) + webpack 통합
+   - `bot/botContract.js`에 `BOT_LANGUAGE` enum + 검증 함수 추가
+   - `bot/botWorkerPython.js` 신설 — Pyodide 로드 + `pyodide.loadPackage('numpy')` + 참가자 소스
+     실행 + `decide` 심볼 매 틱 호출
+   - `bot/botInput.js` `PikaBotInput`에 `language` 파라미터 추가 → `spawnWorker()`가 언어별 Worker
+     URL 선택
+   - `bot/testSetup.js`에 side별 언어 선택 UI 반영 + `onInitResult` 진행 단계 표시
+   - `en/ko/zh index.html` + `style.css`에 언어 선택 UI 마크업
+   - `bot/examplePythonBots.js` — 추격형 봇의 Python 포팅
+3. **검증**: `npm run lint`/`npm run build` 통과. Playwright로 (a) JS 봇 회귀 (b) Python vs JS
+   (c) Python vs Python (d) Python 초기 로드 UX(상태 문구 진행) 확인. 콘솔 에러 없음.
+
+**상태**: 진행 중 (stub 확정 완료, 구현 착수 전)
