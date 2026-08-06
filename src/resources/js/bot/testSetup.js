@@ -4,6 +4,12 @@
  * try any combination -- my bot vs my own keyboard, my bot vs the built-in
  * AI, bot vs bot, etc. Replaces the Phase 1 devBotHook.js query-param hack.
  *
+ * Phase 5 (docs/agent-dev/PHASES.md Phase 5, ADR-0012~0018) adds a
+ * per-side language selector (JavaScript | Python) so the same "bot"
+ * mode can run either a JS `decide()` or a Python `decide()` -- the
+ * PikaBotInput picks the right Worker script from its `language`
+ * argument (see botInput.js).
+ *
  * Design notes:
  * - "keyboard" mode is left completely alone (no isComputer/keyboardArray
  *   override) so the classic menu-driven 1P-vs-AI / 2P flow keeps working
@@ -30,16 +36,27 @@
 import { PikaKeyboard } from '../keyboard.js';
 import { PikaBotInput } from './botInput.js';
 import { NullInput } from './nullInput.js';
-import { CHASE_BOT_SOURCE } from './exampleBots.js';
+import { CHASE_BOT_SOURCE, CHASE_BOT_SOURCE_PY } from './exampleBots.js';
+import { BOT_LANGUAGE } from './botContract.js';
 import { localStorageWrapper } from '../utils/local_storage_wrapper.js';
 
 /** @typedef {'keyboard'|'bot'|'ai'} SideMode */
+/** @typedef {'js'|'py'} SideLanguage */
 
 const DEFAULT_MODE = 'keyboard';
+const DEFAULT_LANGUAGE = BOT_LANGUAGE.JS;
 
 const STORAGE_KEYS = {
-  left: { mode: 'pv-bot-left-mode', source: 'pv-bot-left-source' },
-  right: { mode: 'pv-bot-right-mode', source: 'pv-bot-right-source' },
+  left: {
+    mode: 'pv-bot-left-mode',
+    source: 'pv-bot-left-source',
+    language: 'pv-bot-left-language',
+  },
+  right: {
+    mode: 'pv-bot-right-mode',
+    source: 'pv-bot-right-source',
+    language: 'pv-bot-right-language',
+  },
 };
 
 const SIDE_INFO = {
@@ -125,20 +142,40 @@ export function setUpBotTestUI(pikaVolley, ticker) {
         // nested object in place is just asking for a stale-reference bug
         // like docs/agent-dev/decisions/ADR-0010-bot-setup-double-listener-bug.md.
         config = Object.assign({}, config, {
-          [side]: { mode: btn.dataset.mode, source: config[side].source },
+          [side]: Object.assign({}, config[side], { mode: btn.dataset.mode }),
         });
         setSelectedModeBtn(els, side, btn.dataset.mode);
       });
     });
+    if (els[side].languageGroup) {
+      Array.from(els[side].languageGroup.children).forEach((btn) => {
+        btn.addEventListener('click', () => {
+          config = Object.assign({}, config, {
+            [side]: Object.assign({}, config[side], {
+              language: btn.dataset.language,
+            }),
+          });
+          setSelectedLanguageBtn(els, side, btn.dataset.language);
+        });
+      });
+    }
     els[side].exampleBtn.addEventListener('click', () => {
-      els[side].source.value = CHASE_BOT_SOURCE;
+      // Language field reflects the *currently selected* radio button, not
+      // the last-saved config, so switching language + clicking the
+      // example button loads the corresponding language's example.
+      els[side].source.value =
+        config[side].language === BOT_LANGUAGE.PY
+          ? CHASE_BOT_SOURCE_PY
+          : CHASE_BOT_SOURCE;
     });
   });
 
   els.applyBtn.addEventListener('click', () => {
     config = {
-      left: { mode: config.left.mode, source: els.left.source.value },
-      right: { mode: config.right.mode, source: els.right.source.value },
+      left: Object.assign({}, config.left, { source: els.left.source.value }),
+      right: Object.assign({}, config.right, {
+        source: els.right.source.value,
+      }),
     };
     saveConfig(config);
     // restart() sends the game back through intro -> menu -> ... -- once
@@ -152,7 +189,7 @@ export function setUpBotTestUI(pikaVolley, ticker) {
 /**
  * @param {import('../pikavolley.js').PikachuVolleyball} pikaVolley
  * @param {'left'|'right'} side
- * @param {{mode: SideMode, source: string}} sideConfig
+ * @param {{mode: SideMode, source: string, language: SideLanguage}} sideConfig
  * @param {ReturnType<typeof collectElements>} els
  * @param {{left: PikaBotInput|null, right: PikaBotInput|null}} activeBotInputs
  */
@@ -193,13 +230,43 @@ function applySide(pikaVolley, side, sideConfig, els, activeBotInputs) {
       isPlayer2Serve: pikaVolley.isPlayer2Serve,
     }),
     botSource: sideConfig.source,
-    onInitResult: ({ ok, error }) => {
-      setStatus(els, side, ok ? '봇 코드 로드됨' : '에러: ' + error);
+    language: sideConfig.language,
+    onInitResult: (event) => {
+      setStatus(els, side, initPhaseToStatus(sideConfig.language, event));
     },
   });
   pikaVolley.keyboardArray[slotIndex] = botInput;
   activeBotInputs[side] = botInput;
-  setStatus(els, side, '봇 로딩 중...');
+  setStatus(
+    els,
+    side,
+    sideConfig.language === BOT_LANGUAGE.PY
+      ? 'Python 러너 시작 중...'
+      : '봇 로딩 중...'
+  );
+}
+
+/**
+ * Translate an onInitResult event into a Korean status string. Python has
+ * multi-phase progress (Pyodide load -> numpy load -> source exec -> ok);
+ * JS has a single terminal event.
+ * @param {SideLanguage} language
+ * @param {{phase: string, ok: (boolean|undefined), error: (string|undefined)}} event
+ * @return {string}
+ */
+function initPhaseToStatus(language, event) {
+  if (event.phase === 'ok') {
+    return '봇 코드 로드됨';
+  }
+  if (event.phase === 'error' || event.ok === false) {
+    return '에러: ' + (event.error || 'unknown');
+  }
+  if (language === BOT_LANGUAGE.PY) {
+    if (event.phase === 'loadingPyodide') return 'Python 로딩 중...';
+    if (event.phase === 'loadingNumpy') return 'Python 준비 중... (numpy 로딩)';
+    if (event.phase === 'runningSource') return '봇 코드 실행 중...';
+  }
+  return '';
 }
 
 /**
@@ -260,8 +327,8 @@ function createDefaultKeyboard(engineSide) {
 /**
  * @return {{
  *   openBtn: Element, box: Element, closeBtn: Element, applyBtn: Element,
- *   left: {modeGroup: Element, source: HTMLTextAreaElement, exampleBtn: Element, status: Element},
- *   right: {modeGroup: Element, source: HTMLTextAreaElement, exampleBtn: Element, status: Element},
+ *   left: {modeGroup: Element, languageGroup: Element|null, source: HTMLTextAreaElement, exampleBtn: Element, status: Element},
+ *   right: {modeGroup: Element, languageGroup: Element|null, source: HTMLTextAreaElement, exampleBtn: Element, status: Element},
  * }|null}
  */
 function collectElements() {
@@ -272,6 +339,7 @@ function collectElements() {
   }
   const forSide = (side) => ({
     modeGroup: document.getElementById(`bot-setup-${side}-mode`),
+    languageGroup: document.getElementById(`bot-setup-${side}-language`),
     source: document.getElementById(`bot-setup-${side}-source`),
     exampleBtn: document.getElementById(`bot-setup-${side}-example-btn`),
     status: document.getElementById(`bot-setup-${side}-status`),
@@ -287,40 +355,40 @@ function collectElements() {
 }
 
 /**
- * @return {{left: {mode: SideMode, source: string}, right: {mode: SideMode, source: string}}}
+ * @return {{left: {mode: SideMode, source: string, language: SideLanguage}, right: {mode: SideMode, source: string, language: SideLanguage}}}
  */
 function loadConfig() {
-  return {
-    left: {
-      mode: localStorageWrapper.get(STORAGE_KEYS.left.mode) || DEFAULT_MODE,
-      source: localStorageWrapper.get(STORAGE_KEYS.left.source) || '',
-    },
-    right: {
-      mode: localStorageWrapper.get(STORAGE_KEYS.right.mode) || DEFAULT_MODE,
-      source: localStorageWrapper.get(STORAGE_KEYS.right.source) || '',
-    },
-  };
+  const forSide = (side) => ({
+    mode: localStorageWrapper.get(STORAGE_KEYS[side].mode) || DEFAULT_MODE,
+    source: localStorageWrapper.get(STORAGE_KEYS[side].source) || '',
+    language:
+      localStorageWrapper.get(STORAGE_KEYS[side].language) || DEFAULT_LANGUAGE,
+  });
+  return { left: forSide('left'), right: forSide('right') };
 }
 
 /**
- * @param {{left: {mode: SideMode, source: string}, right: {mode: SideMode, source: string}}} config
+ * @param {{left: {mode: SideMode, source: string, language: SideLanguage}, right: {mode: SideMode, source: string, language: SideLanguage}}} config
  */
 function saveConfig(config) {
-  localStorageWrapper.set(STORAGE_KEYS.left.mode, config.left.mode);
-  localStorageWrapper.set(STORAGE_KEYS.left.source, config.left.source);
-  localStorageWrapper.set(STORAGE_KEYS.right.mode, config.right.mode);
-  localStorageWrapper.set(STORAGE_KEYS.right.source, config.right.source);
+  ['left', 'right'].forEach((side) => {
+    localStorageWrapper.set(STORAGE_KEYS[side].mode, config[side].mode);
+    localStorageWrapper.set(STORAGE_KEYS[side].source, config[side].source);
+    localStorageWrapper.set(STORAGE_KEYS[side].language, config[side].language);
+  });
 }
 
 /**
  * @param {ReturnType<typeof collectElements>} els
- * @param {{left: {mode: SideMode, source: string}, right: {mode: SideMode, source: string}}} config
+ * @param {{left: {mode: SideMode, source: string, language: SideLanguage}, right: {mode: SideMode, source: string, language: SideLanguage}}} config
  */
 function populateUI(els, config) {
   els.left.source.value = config.left.source;
   els.right.source.value = config.right.source;
   setSelectedModeBtn(els, 'left', config.left.mode);
   setSelectedModeBtn(els, 'right', config.right.mode);
+  setSelectedLanguageBtn(els, 'left', config.left.language);
+  setSelectedLanguageBtn(els, 'right', config.right.language);
 }
 
 /**
@@ -331,6 +399,18 @@ function populateUI(els, config) {
 function setSelectedModeBtn(els, side, mode) {
   Array.from(els[side].modeGroup.children).forEach((btn) => {
     btn.classList.toggle('selected', btn.dataset.mode === mode);
+  });
+}
+
+/**
+ * @param {ReturnType<typeof collectElements>} els
+ * @param {'left'|'right'} side
+ * @param {SideLanguage} language
+ */
+function setSelectedLanguageBtn(els, side, language) {
+  if (!els[side].languageGroup) return; // markup may be absent in some locales
+  Array.from(els[side].languageGroup.children).forEach((btn) => {
+    btn.classList.toggle('selected', btn.dataset.language === language);
   });
 }
 

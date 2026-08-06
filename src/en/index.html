@@ -384,9 +384,9 @@
         <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
           <h1>Bot Test Setup</h1>
           <p class="small">
-            Left / right side each independently: keyboard, your bot code, or
-            the built-in AI. Settings apply after you click Apply, which
-            restarts the game.
+            Left / right side each independently: keyboard, your bot code
+            (JavaScript or Python), or the built-in AI. Settings apply after
+            you click Apply, which restarts the game.
           </p>
           <div class="bot-setup-columns">
             <div class="bot-setup-side">
@@ -400,6 +400,15 @@
                 </button>
                 <button type="button" class="btn" data-mode="ai">
                   <span class="check">&check; </span>Built-in AI
+                </button>
+              </div>
+              <p class="bot-setup-language-label">Language (applies when Bot code is selected):</p>
+              <div class="bot-setup-language-group" id="bot-setup-left-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
                 </button>
               </div>
               <textarea
@@ -423,6 +432,15 @@
                 </button>
                 <button type="button" class="btn" data-mode="ai">
                   <span class="check">&check; </span>Built-in AI
+                </button>
+              </div>
+              <p class="bot-setup-language-label">Language (applies when Bot code is selected):</p>
+              <div class="bot-setup-language-group" id="bot-setup-right-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
                 </button>
               </div>
               <textarea

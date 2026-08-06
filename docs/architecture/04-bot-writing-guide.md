@@ -1,16 +1,22 @@
 # 04. 봇 코드 작성 가이드 (Try-out용)
 
-> **이 문서는 "현재 코드 기준" 스냅샷입니다.** 작성 시점: 2026-07-28,
-> [`docs/agent-dev/CONTRACTS.md`](../agent-dev/CONTRACTS.md) v0.4 + `src/resources/js/bot/` 구현 기준.
+> **이 문서는 "현재 코드 기준" 스냅샷입니다.** 작성 시점: 2026-08-05,
+> [`docs/agent-dev/CONTRACTS.md`](../agent-dev/CONTRACTS.md) v0.5 + `src/resources/js/bot/` 구현 기준.
 > 프로토콜(필드/타이밍)의 단일 진실 소스(SOR)는 항상 CONTRACTS.md이고, 거기 값이 바뀌면 이 문서도
 > 같이 갱신해야 한다 — 이 문서는 그걸 실제로 "손으로 봇 코드를 짜서 붙여넣고 돌려보는" 사람 입장에서
 > 풀어 쓴 실전 가이드다. 배경 구조(왜 이렇게 만들었는지)는 [03-bot-integration.md](./03-bot-integration.md) 참고.
+>
+> **Phase 5 반영 (2026-08-05)**: 이제 봇을 **JavaScript** 또는 **Python** 중 원하는 언어로 짤 수
+> 있다 (ADR-0012~0018). 또한 결정 주기가 매 프레임 → **5프레임에 한 번**(200ms)으로 완화됨
+> (ADR-0016). 아래 예시 코드/설명은 두 언어 모두 반영해서 갱신되어 있으며, 원래 JS만 있던 부분엔
+> 옆에 Python 대응이 함께 붙어 있다.
 
 ## 1. 한 줄 요약
 
-봇 코드는 **`decide(snapshot)`이라는 함수 하나만 정의하면 되는 평범한 JS 텍스트**다. 매 틱
-게임 상태(`snapshot`)를 인자로 받아 `{ x, y, hit }` 세 값을 반환하면, 그게 그대로 그 진영의 키
-입력(좌우/점프/파워히트)으로 쓰인다.
+봇 코드는 **`decide(snapshot)`이라는 함수 하나만 정의하면 되는 평범한 JS 또는 Python 텍스트**다.
+매 틱(200ms) 게임 상태(`snapshot`)를 인자로 받아 `{ x, y, hit }` 세 값을 반환하면, 그게 그대로 그
+진영의 키 입력(좌우/점프/파워히트)으로 쓰인다. 언어는 Bot Setup 패널에서 side별로 각각 선택할 수
+있고(§2), 문법 요건은 언어마다 조금씩 다르니 §3 참고.
 
 ## 2. 시작하기: Bot Setup 패널 사용법
 
@@ -18,20 +24,28 @@
 2. "Bot Test Setup" 패널이 뜨면 왼쪽(Player 1)/오른쪽(Player 2)을 각각 독립적으로 고른다:
    - **Keyboard** — 원래대로 사람이 물리 키로 조작.
    - **Bot code** — 아래 텍스트박스에 코드를 붙여넣는다. 직접 짜도 되고, **"Load example bot"**
-     버튼을 누르면 기본 예시(추격형 봇, 5절 참고)가 채워진다.
+     버튼을 누르면 기본 예시(추격형 봇, 6절 참고)가 채워진다. **언어 선택**(JavaScript / Python)
+     따라 채워지는 예시 소스가 달라진다.
    - **Built-in AI** — 원작 기본 탑재 AI가 조작.
-3. **"Apply (restart)"** 를 누른다. 이 순간 즉시 바뀌는 게 아니라 게임이 인트로 화면으로 리셋되고,
+3. **언어 선택**: 각 side의 mode 버튼 바로 아래에 "언어" 라디오가 있다. JavaScript(기본) 또는
+   Python. 이 선택은 mode가 "Bot code"일 때만 의미가 있다. Python을 처음 고른 경우 첫 Apply 시
+   Pyodide(브라우저용 CPython, 약 10MB)가 로드되므로 몇 초 지연이 있다. 이 사이 상태 줄에
+   "Python 로딩 중..." → "Python 준비 중... (numpy 로딩)" 순서로 진행 표시가 뜬다.
+4. **"Apply (restart)"** 를 누른다. 이 순간 즉시 바뀌는 게 아니라 게임이 인트로 화면으로 리셋되고,
    메뉴에서 1P/2P를 다시 고른 뒤 실제 랠리(`round` 상태)가 시작되는 순간부터 설정이 적용된다
    (왜 그런지는 [03-bot-integration.md §4](./03-bot-integration.md#4-그-외-게임-진행-관련-수정) 참고).
-4. 코드에 문법 오류가 있거나 `decide` 함수가 없으면, 텍스트박스 아래 상태 줄에 로드 결과("봇 코드
-   로드됨" / "에러: ...")가 표시된다.
-5. 랠리 진행 중 코드를 고쳐서 다시 테스트하려면, 텍스트박스 내용을 바꾸고 다시 **Apply**를 누르면
+5. 코드에 문법 오류가 있거나 `decide` 함수가 없으면, 텍스트박스 아래 상태 줄에 로드 결과("봇 코드
+   로드됨" / "에러: ...")가 표시된다. Python은 여기에 더해 허용 목록 밖 라이브러리 import
+   실패(`ModuleNotFoundError`)도 이 상태 줄에 나온다 (허용 라이브러리는 §3.2 참고).
+6. 랠리 진행 중 코드를 고쳐서 다시 테스트하려면, 텍스트박스 내용을 바꾸고 다시 **Apply**를 누르면
    된다 (역시 인트로로 리셋 후 다음 랠리부터 반영).
-6. 경기가 끝나 인트로로 돌아오면 그 진영은 잠깐 실제 키보드로 바뀐다 — 다음 경기 메뉴 선택(파워히트
+7. 경기가 끝나 인트로로 돌아오면 그 진영은 잠깐 실제 키보드로 바뀐다 — 다음 경기 메뉴 선택(파워히트
    키)까지는 사람이 진행해야 한다. 메뉴를 통과해 다음 경기가 시작되면 저장된 설정이 자동으로 다시
    적용된다.
 
 ## 3. `decide` 함수의 요건
+
+### 3.1 JavaScript
 
 ```js
 function decide(snapshot) {
@@ -42,33 +56,63 @@ function decide(snapshot) {
 
 - **반드시 최상위(top-level)에 `decide`라는 이름으로 정의된 함수여야 한다.** `function decide(s) {...}`
   형태가 가장 확실하다. 코드 실행 후 `typeof decide === 'function'`을 검사해서 못 찾으면 그대로
-  초기화 실패로 처리된다 ([`bot/botWorker.js:31-35`](../../src/resources/js/bot/botWorker.js#L31-L35)).
+  초기화 실패로 처리된다 ([`bot/botWorker.js`](../../src/resources/js/bot/botWorker.js)).
 - **한 틱에 한 번, 동기적으로 호출된다.** 반환값은 그 호출이 끝나는 즉시 쓰이는 값이어야 한다 —
   `fetch`/`setTimeout` 콜백 안에서 나중에 `return`하거나 `Promise`를 반환해도 소용없다. Promise
   객체는 `{x,y,hit}` 형태가 아니므로 그냥 무입력으로 처리된다.
 - **`decide` 바깥에 선언한 변수/함수는 틱 사이에 그대로 유지된다.** 이 소스 전체가 최초 로드 시
   딱 한 번 평가되고 `decide` 함수만 계속 재사용되는 구조라서, 최상위 `var` 등으로 카운터나 이전
-  틱 정보를 저장해두는 게 자연스럽다. 예시(5절 추격형 봇의 `tickCounter`) 참고.
+  틱 정보를 저장해두는 게 자연스럽다.
 - **`import`/`export`, 외부 라이브러리, DOM/`window` 접근, 네트워크 요청은 쓸 수 없다.** 코드는
   격리된 Web Worker 안에서 일반 스크립트로 파싱된다 (`new Function(...)`) — `let`/`const`/화살표
   함수/클래스 같은 최신 문법은 문제없이 되지만, 모듈 문법(`import` 등)은 구문 오류로 초기화가
   실패한다. `console.log`는 쓸 수 있고, 브라우저 개발자 도구의 Worker 콘솔(예: Chrome
   DevTools → Sources → 좌측 트리의 별도 Worker 항목)에서 출력을 볼 수 있다.
+
+### 3.2 Python
+
+```python
+def decide(snapshot: dict) -> dict:
+    # ... 판단 로직 ...
+    return {'x': 0, 'y': 0, 'hit': 0}
+```
+
+- **반드시 최상위에 `decide` 함수를 정의해야 한다.** 코드가 `pyodide.runPython(source)`으로
+  실행된 뒤 `pyodide.globals['decide']`를 잡아둔다. 못 찾으면 초기화 실패
+  ([`bot/botWorkerPython.js`](../../src/resources/js/bot/botWorkerPython.js)).
+- **`snapshot`은 파이썬 `dict`**. §4.1의 JSON 스키마를 그대로 dict로 접근한다:
+  `snapshot['self']['x']`, `snapshot['ball']['expectedLandingPointX']` 등.
+- **반환값도 dict** (`{'x': ..., 'y': ..., 'hit': ...}`). 값 검증 규칙은 JS와 동일.
+- **한 틱에 한 번, 동기적으로 호출된다.** `async def` 안 됨, `asyncio` 관련 반환값도 무입력 처리.
+- **`decide` 바깥의 모듈-레벨 변수는 틱 사이에 유지된다.** 예: `tick_counter = 0`을 최상위에 두면
+  `decide`에서 `global tick_counter; tick_counter += 1`로 누적 가능. §6.2 참고.
+- **사용 가능한 라이브러리**: **Python 표준 라이브러리 전체 + numpy**. Bot Worker가 부팅 시
+  자동으로 numpy를 로드해두므로 `import numpy as np`가 즉시 된다. `math`, `random`, `collections`,
+  `itertools`, `statistics` 등 표준 라이브러리는 전부 됨. `scipy`/`scikit-learn`/`pandas` 등은
+  **미포함** — `import`하면 `ModuleNotFoundError`로 초기화 실패한다 (ADR-0018, 필요하면 대회 준비
+  기간에 요청).
+- **로그**: `print(...)`가 브라우저 콘솔로 리다이렉트된다 — JS의 `console.log`와 같은 위치(Worker
+  콘솔)에서 확인.
+- **첫 로드 지연**: Pyodide는 Python 봇이 처음 필요할 때만 로드된다. 첫 Apply 시 몇 초 걸리는 게
+  정상. 이후에는 그 Worker가 살아있는 동안 즉시 재사용됨.
+
+### 3.3 두 언어에 공통 (실패 처리)
+
 - **`decide` 안에서 던진 예외는 그 틱만 무입력으로 처리되고 조용히 넘어간다.** 패널에는 초기화
-  단계(문법 오류/함수 없음)의 에러만 표시되고, 매 틱 실행 중 예외는 UI에 따로 뜨지 않는다
-  ([`bot/botInput.js:115-121`](../../src/resources/js/bot/botInput.js#L115-L121)). 디버깅할 땐 `decide`
-  안에 직접 `try/catch` + `console.log`를 넣어 무슨 값이 오갔는지 확인하는 걸 추천.
-- **반환값의 각 필드가 유효 범위를 벗어나도(타입 오류 포함) 그 틱은 무입력으로 처리된다** — 4절 참고.
+  단계(문법 오류/함수 없음/import 실패)의 에러만 표시되고, 매 틱 실행 중 예외는 UI에 따로 뜨지
+  않는다. 디버깅할 땐 `decide` 안에 직접 `try/except` (Python) / `try/catch` (JS)를 넣고
+  `print`/`console.log`로 무슨 값이 오갔는지 찍어 확인하는 걸 추천.
+- **반환값의 각 필드가 유효 범위를 벗어나도(타입 오류 포함) 그 틱은 무입력으로 처리된다** — §4 참고.
 
-### 3.1 로그로 디버깅하기
+### 3.4 로그로 디버깅하기
 
-`decide`는 매 틱(기본 설정 기준 초당 25번, 40ms마다) 호출된다. 매번 `console.log`를 찍으면 콘솔이
-순식간에 도배되어 오히려 아무것도 못 읽는다 — **틱 카운터를 두고 N틱에 한 번만 찍는 게 사실상
-필수**다.
+`decide`는 매 틱(기본 설정 기준 **초당 5번, 200ms마다** — ADR-0016으로 상향됨) 호출된다. 매번
+로그를 찍으면 콘솔이 순식간에 도배되므로 **틱 카운터를 두고 N번에 한 번만 찍는 게 사실상 필수**다.
 
+JavaScript:
 ```js
-var tickCounter = 0; // decide 밖, 최상위에 선언 (틱 사이에 유지됨, 위 3절 참고)
-var LOG_EVERY_N_TICKS = 25; // 대략 1초에 한 번 (25fps 기준)
+var tickCounter = 0; // decide 밖, 최상위에 선언 (틱 사이에 유지됨)
+var LOG_EVERY_N_TICKS = 5; // 대략 1초에 한 번 (5 ticks/s 기준)
 
 function decide(s) {
   tickCounter++;
@@ -88,15 +132,32 @@ function decide(s) {
 }
 ```
 
-- 6.1의 추격형 예시 코드가 정확히 이 패턴(`tickCounter % 100`)을 이미 쓰고 있다 — 그대로 복사해서
-  로그 내용만 원하는 필드로 바꿔 써도 된다.
+Python (동일 로직):
+```python
+tick_counter = 0
+LOG_EVERY_N_TICKS = 5  # 대략 1초에 한 번
+
+def decide(s):
+    global tick_counter
+    tick_counter += 1
+    # ... 판단 로직 ...
+    result = {'x': 0, 'y': 0, 'hit': 0}
+
+    if tick_counter % LOG_EVERY_N_TICKS == 0:
+        print(f"tick={s['tick']} state={s['self']['state']}"
+              f" self=({s['self']['x']},{s['self']['y']})"
+              f" ball=({s['ball']['x']},{s['ball']['y']}) -> {result}")
+    return result
+```
+
+- 6절의 예시 봇들이 정확히 이 패턴을 쓰고 있으니 그대로 복사해서 로그 내용만 바꿔 써도 된다.
 - 매번 주기적으로 찍는 대신, 특정 순간만 보고 싶으면(예: 파워히트를 시도한 틱만) 조건부로 찍는
   것도 방법이다: `if (result.hit === 1) console.log(...)`.
 - 로그는 메인 페이지 콘솔이 아니라 **이 봇 전용 Worker의 콘솔**에 찍힌다. 최신 Chrome은 보통 메인
   콘솔에도 같이 표시해주지만, 안 보이면 개발자 도구 Sources 패널 좌측 상단의 컨텍스트
   선택기(또는 `chrome://inspect` → Workers 목록)에서 이 봇의 Worker를 선택해서 확인한다.
-- `decide` 안에서 예외가 나면(위 3절) 상태 패널엔 안 뜨므로, 의심되는 구간을 `try/catch`로 감싸고
-  catch 블록에서 `console.log(error)`를 찍어보는 것도 유용하다.
+- `decide` 안에서 예외가 나면(위 3.3) 상태 패널엔 안 뜨므로, 의심되는 구간을 예외 처리로 감싸고
+  catch 블록에서 예외 내용을 찍어보는 것도 유용하다.
 
 ## 4. 입력(스냅샷)과 반환값(키 입력) 형식
 
@@ -127,7 +188,7 @@ function decide(s) {
 | `meta.score` | `{ self, opp }` — 항상 내 기준으로 정렬됨 |
 | `meta.isPlayer2Serve` | 현재 서브권이 Player2(오른쪽)인지 |
 | `meta.rallyFrameCount` | 이번 랠리 시작 후 지난 틱 수 |
-| `config.tickFrameGroupSize` | 몇 프레임마다 한 번 `decide`가 불리는지 (현재 1 = 매 프레임) |
+| `config.tickFrameGroupSize` | 몇 프레임마다 한 번 `decide`가 불리는지 (**현재 5** = 5프레임 = 200ms마다, ADR-0016) |
 
 **좌표계**: 원본 엔진의 정수 픽셀 그대로, 변환 없음. 원점은 좌상단, x는 오른쪽으로 증가,
 **y는 아래쪽으로 증가**(값이 작을수록 위쪽)한다. 코트 폭 432(`x: 0~432`), 네트 x좌표 216, 공
@@ -179,22 +240,29 @@ function decide(s) {
 - **`x`의 부호는 스매시 방향을 조종하지 않는다.** 공이 어느 쪽으로 튈지는 네트 기준 어느 쪽에서
   맞았는지로 엔진이 정하고, 파워히트 순간의 `x≠0`은 그냥 타구 속도를 더 빠르게 만든다 (5절 예시
   코드의 주석 참고).
-- **응답에는 구조적으로 약 1틱(`tickFrameGroupSize=1`이면 ~40ms) 지연이 있다.** 메인 스레드가 Worker
-  응답을 그 틱 안에서 기다릴 수 없기 때문 — 버그가 아니라 이 아키텍처의 특성이다
+- **응답에는 구조적으로 약 1틱(`tickFrameGroupSize=5`이면 ~200ms) 지연이 있다.** 메인 스레드가
+  Worker 응답을 그 틱 안에서 기다릴 수 없기 때문 — 버그가 아니라 이 아키텍처의 특성이다
   (자세한 내용: [03-bot-integration.md §1](./03-bot-integration.md#1-새로운-입력-경로)).
 
 ## 6. 예시 코드
 
-세 개의 완성된 예시가 이미 있다. 전략을 참고하거나 그대로 복사해서 시작점으로 써도 된다.
+완성된 예시가 이미 있다. 전략을 참고하거나 그대로 복사해서 시작점으로 써도 된다.
 
-### 6.1 추격형 (chase) — UI의 "Load example bot" 버튼이 불러오는 것
+### 6.1 추격형 JS 봇 (chase) — Bot Setup의 "Load example bot" 버튼(JS 선택 시)
 
 파일: [`bot/exampleBots.js`](../../src/resources/js/bot/exampleBots.js) (`CHASE_BOT_SOURCE`).
 `ball.expectedLandingPointX`를 쫓아가다가, 점프해서 닿을 수 있으면 파워히트를 시도한다. 네트에
 가까우면 급강하 스매시(`y=1`), 멀면 아치형으로 넘기는 못박기(`y=-1`)를 고른다. `tickCounter` 변수로
-100틱마다 한 번씩 상태를 `console.log`로 찍는 디버깅 예시도 포함.
+20틱마다 한 번씩 상태를 `console.log`로 찍는 디버깅 예시도 포함.
 
-### 6.2 논힛(no-hit) 포지셔닝형
+### 6.2 추격형 Python 봇 — Bot Setup의 "Load example bot" 버튼(Python 선택 시)
+
+파일: [`bot/exampleBots.js`](../../src/resources/js/bot/exampleBots.js) (`CHASE_BOT_SOURCE_PY`).
+6.1의 파이썬 포팅. 같은 전략(추격 → 점프 → 위치에 따른 스매시 각도)이며, `tick_counter`, `f-string`,
+`global` 선언 등 파이썬 관용 표현으로 다시 짠 버전. JS와 Python 코드를 나란히 비교하고 싶을 때
+좋은 시작점.
+
+### 6.3 논힛(no-hit) 포지셔닝형
 
 파일: [`docs/agent-dev/example-bots/no_hit_positioning_bot.js`](../agent-dev/example-bots/no_hit_positioning_bot.js).
 `hit`을 항상 0으로 둬서 파워히트/다이빙을 아예 안 쓰고, 몸으로 공 진로에 들어가는 것만으로 받아친다.
@@ -202,7 +270,7 @@ function decide(s) {
 "공이 x축으로 딱 맞고, 옆으로 너무 빠르지 않고, 확실히 높이 있을 때"만 점프하는 로직이 기본 AI의
 점프 판단 로직을 참고해서 들어있다.
 
-### 6.3 파워히트형
+### 6.4 파워히트형 (JS)
 
 파일: [`docs/agent-dev/example-bots/power_hit_bot.js`](../agent-dev/example-bots/power_hit_bot.js).
 6.1의 추격형과 거의 같은 전략을 더 간결하게 정리한 버전 — 참고용으로 나란히 두고 비교해봐도 좋다.
@@ -211,13 +279,18 @@ function decide(s) {
 
 - **"에러: undefined"만 뜨고 원인을 모르겠다** → 대개 `decide`라는 이름의 최상위 함수가 없는
   경우다(오타, 함수를 다른 이름으로 정의, `export`를 써서 문법 오류가 난 경우 등). 코드 맨 위에
-  `function decide(s) { ... }`가 그대로 있는지 확인.
+  `function decide(s) { ... }` (또는 Python이면 `def decide(s):`)가 그대로 있는지 확인.
+- **"에러: ModuleNotFoundError: No module named 'X'"** (Python) → 허용 라이브러리 밖의 걸 import
+  했다. §3.2 참고 — 표준 라이브러리 + numpy만 됨.
 - **Apply를 눌렀는데 아무것도 안 바뀐 것 같다** → 정상이다. 인트로로 리셋된 뒤 메뉴를 통과해 다음
-  랠리가 시작돼야 적용된다 (2절 3번).
-- **봇이 반응이 한 박자 느린 것 같다** → 설계상 있는 ~1틱 지연이다 (5절 마지막 항목), 버그 아님.
+  랠리가 시작돼야 적용된다 (2절 4번). Python은 여기에 더해 첫 로드 시 Pyodide 부팅에 몇 초 걸리는
+  게 정상 — 상태 줄에 "Python 로딩 중..." 문구가 뜨는 동안은 무입력이다.
+- **봇이 반응이 한 박자 느린 것 같다** → 설계상 있는 ~1틱(200ms) 지연이다 (5절 마지막 항목), 버그
+  아님. 이 지연이 예전(40ms)보다 더 크게 느껴지는 건 ADR-0016으로 tick 그룹을 5로 올렸기 때문 —
+  같은 이유로 봇끼리도 매프레임 반사가 아니라서 승부가 다양해진다.
 - **점프/파워히트가 씹히는 것 같다** → `self.state`를 안 보고 있을 가능성이 크다. 점프는 `state===0`
   일 때만, 파워히트는 `state===1`일 때만 실제로 발동한다(5절 표) — 조건 없이 매 틱 `y=-1`이나
   `hit=1`을 반환해도 엔진이 조건에 안 맞으면 그냥 무시한다.
-- **로그가 안 보이거나 너무 빨리 지나간다** → 3.1절 참고. 매 틱(초당 25번) 그대로 찍으면 못 읽으니
-  `tickCounter % N`으로 주기를 줄이고, 그래도 안 보이면 메인 콘솔이 아니라 Worker 자체 콘솔을
-  봐야 한다.
+- **로그가 안 보이거나 너무 빨리 지나간다** → 3.4절 참고. 매 틱(초당 5번) 그대로 찍어도 20초쯤
+  지나면 콘솔이 꽉 차니 `tickCounter % N`으로 주기를 줄이고, 그래도 안 보이면 메인 콘솔이 아니라
+  Worker 자체 콘솔을 봐야 한다.

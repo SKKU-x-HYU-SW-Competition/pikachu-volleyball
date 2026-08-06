@@ -35,6 +35,30 @@ module.exports = {
         { from: 'src/zh/manifest.json', to: 'zh/manifest.json' },
         { from: 'src/resources/style.css', to: 'resources/style.css' },
         { from: 'src/index.html', to: 'index.html' },
+        // Pyodide runtime (D-014, ADR-0014): copied as-is into dist/pyodide/
+        // so botWorkerPython.js can loadPyodide() via a relative URL. Not
+        // bundled through webpack -- Pyodide loads its own wasm/zip files at
+        // runtime using indexURL, and webpack transforming those breaks it.
+        // Skip TypeScript defs, source maps, HTML consoles and README to
+        // keep dist/ lean; everything Pyodide's runtime actually loads (mjs,
+        // wasm, stdlib zip, package repo) is included.
+        {
+          from: path.resolve(__dirname, 'node_modules/pyodide') + '/*',
+          to: 'pyodide/[name][ext]',
+          globOptions: {
+            // Skip TypeScript defs, source maps, HTML consoles, README, and
+            // package.json to keep dist/ lean. Everything Pyodide's runtime
+            // actually loads (mjs, wasm, stdlib zip, pyodide-lock.json for
+            // package repo) is included.
+            ignore: [
+              '**/*.md',
+              '**/console*.html',
+              '**/*.d.ts',
+              '**/*.map',
+              '**/package.json',
+            ],
+          },
+        },
       ],
     }),
     new HtmlWebpackPlugin({

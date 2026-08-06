@@ -374,8 +374,9 @@
         <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
           <h1>機器人測試設定</h1>
           <p class="small">
-            左右兩側可以各自獨立設定為鍵盤、你的機器人程式碼、或內建AI。
-            設定需按下「套用」才會生效，屆時遊戲將重新開始。
+            左右兩側可以各自獨立設定為鍵盤、你的機器人程式碼
+            （JavaScript 或 Python）、或內建AI。設定需按下「套用」才會
+            生效，屆時遊戲將重新開始。
           </p>
           <div class="bot-setup-columns">
             <div class="bot-setup-side">
@@ -389,6 +390,15 @@
                 </button>
                 <button type="button" class="btn" data-mode="ai">
                   <span class="check">&check; </span>內建AI
+                </button>
+              </div>
+              <p class="bot-setup-language-label">語言（選擇「機器人程式碼」時適用）：</p>
+              <div class="bot-setup-language-group" id="bot-setup-left-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
                 </button>
               </div>
               <textarea
@@ -412,6 +422,15 @@
                 </button>
                 <button type="button" class="btn" data-mode="ai">
                   <span class="check">&check; </span>內建AI
+                </button>
+              </div>
+              <p class="bot-setup-language-label">語言（選擇「機器人程式碼」時適用）：</p>
+              <div class="bot-setup-language-group" id="bot-setup-right-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
                 </button>
               </div>
               <textarea

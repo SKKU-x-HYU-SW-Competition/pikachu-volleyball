@@ -39,5 +39,7 @@ Pyodide 런타임(`pyodide.mjs`, wasm 바이너리, 파이썬 표준 라이브�
 
 - Worker 내 로드는 `new URL('../pyodide/', import.meta.url).href`를 `indexURL`로 넘겨 dev
   (webpack-dev-server)와 prod에서 동일하게 동작하도록 함 (절대 경로 하드코딩 피함).
-- Pyodide 버전은 최신 stable(0.26.x 계열)로 `package.json`에 명시 pin — 자동 minor 업데이트로 wasm
-  파일이 바뀌면 대회 당일 예기치 못한 회귀가 날 수 있어 캐럿(`^`) 없이 정확한 버전 고정.
+- Pyodide 버전은 설치 시점 최신(현재 `314.0.3`)로 `package.json`에 캐럿(`^`) 없이 정확한 버전
+  고정 — 자동 minor 업데이트로 wasm 파일이 바뀌면 대회 당일 예기치 못한 회귀가 날 수 있어서.
+  Pyodide는 최근 CalVer 계열 버전 스킴을 도입해 314 같은 큰 major 숫자가 나오지만 API(`loadPyodide`,
+  `pyodide.runPython` 등)는 안정적으로 유지됨.
