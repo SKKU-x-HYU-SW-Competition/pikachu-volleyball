@@ -51,6 +51,7 @@
     "@pixi/sprite": "^6.4.2",
     "@pixi/sprite-animated": "^6.4.2",
     "@pixi/spritesheet": "^6.4.2",
-    "@pixi/ticker": "^6.4.2"
+    "@pixi/ticker": "^6.4.2",
+    "pyodide": "314.0.3"
   }
 }

@@ -382,9 +382,10 @@
         <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
           <h1>봇 테스트 설정</h1>
           <p class="small">
-            왼쪽/오른쪽 진영을 각각 독립적으로 키보드, 내 봇 코드, 기본
-            탑재 AI 중 하나로 정할 수 있습니다. 설정은 "적용"을 눌러야
-            반영되며, 이때 게임이 재시작됩니다.
+            왼쪽/오른쪽 진영을 각각 독립적으로 키보드, 내 봇 코드
+            (JavaScript 또는 Python), 기본 탑재 AI 중 하나로 정할 수
+            있습니다. 설정은 "적용"을 눌러야 반영되며, 이때 게임이
+            재시작됩니다.
           </p>
           <div class="bot-setup-columns">
             <div class="bot-setup-side">
@@ -398,6 +399,15 @@
                 </button>
                 <button type="button" class="btn" data-mode="ai">
                   <span class="check">&check; </span>기본 AI
+                </button>
+              </div>
+              <p class="bot-setup-language-label">언어 (봇 코드 선택 시 적용):</p>
+              <div class="bot-setup-language-group" id="bot-setup-left-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
                 </button>
               </div>
               <textarea
@@ -423,6 +433,15 @@
                   <span class="check">&check; </span>기본 AI
                 </button>
               </div>
+              <p class="bot-setup-language-label">언어 (봇 코드 선택 시 적용):</p>
+              <div class="bot-setup-language-group" id="bot-setup-right-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
+                </button>
+              </div>
               <textarea
                 id="bot-setup-right-source"
                 class="bot-setup-textarea"
@@ -442,6 +461,14 @@
               닫기
             </button>
           </div>
+        </div>
+        <div class="fade-in-box hidden" id="bot-loading-box">
+          <h1>봇 환경 세팅 중</h1>
+          <p id="bot-loading-text">봇 코드 로딩 중...</p>
+          <p class="small">
+            Python은 처음 로드할 때 몇 초 걸릴 수 있습니다. 준비가
+            끝나면 자동으로 게임이 시작됩니다.
+          </p>
         </div>
         <div class="fade-in-box notice hidden" id="notice-box-1">
           <p>

@@ -14,6 +14,8 @@ import { PikaUserInput } from '../physics.js';
 import {
   buildGameStateSnapshot,
   isValidBotAction,
+  isValidBotLanguage,
+  BOT_LANGUAGE,
   NEUTRAL_ACTION,
   TICK_FRAME_GROUP_SIZE,
   BOT_RESPONSE_TIMEOUT_MS,
@@ -27,18 +29,26 @@ export class PikaBotInput extends PikaUserInput {
    * @param {import('../physics.js').PikaPhysics} args.physics
    * @param {function(): {scores: number[], isPlayer2Serve: boolean}} args.getMeta
    * @param {string} args.botSource bot's source code; must define a
-   *   top-level `decide(snapshot)` function (see botWorker.js)
-   * @param {function({ok: boolean, error: (string|undefined)}): void} [args.onInitResult]
-   *   called once when the Worker finishes (re-)loading botSource -- lets UI
-   *   surface "bot code loaded" vs "syntax error: ..." to a human tester.
+   *   top-level `decide(snapshot)` function (see botWorker.js /
+   *   botWorkerPython.js).
+   * @param {'js'|'py'} [args.language] bot source language (D-012, D-013).
+   *   Selects which Worker script runs the source. Defaults to 'js' when
+   *   omitted so pre-Phase-5 callers keep working unchanged.
+   * @param {function({phase: string, ok: (boolean|undefined), error: (string|undefined)}): void} [args.onInitResult]
+   *   called when the Worker reports init progress. JS runner emits one
+   *   terminal event (`phase: 'ok'` with `ok: true|false`); Python runner
+   *   emits progress events (`phase: 'loadingPyodide'` -> `'loadingNumpy'`
+   *   -> `'runningSource'` -> `'ok'` or `'error'`) so UI can surface
+   *   Pyodide load progress (D-015, D-017).
    */
-  constructor({ side, physics, getMeta, botSource, onInitResult }) {
+  constructor({ side, physics, getMeta, botSource, language, onInitResult }) {
     super();
 
     this.side = side;
     this.physics = physics;
     this.getMeta = getMeta;
     this.botSource = botSource;
+    this.language = isValidBotLanguage(language) ? language : BOT_LANGUAGE.JS;
     this.onInitResult = onInitResult || null;
 
     /** @type {number} monotonically increasing tick counter for this input */
@@ -81,7 +91,11 @@ export class PikaBotInput extends PikaUserInput {
     }
     this.consecutiveTimeouts = 0;
 
-    this.worker = new Worker(new URL('./botWorker.js', import.meta.url), {
+    const workerUrl =
+      this.language === BOT_LANGUAGE.PY
+        ? new URL('./botWorkerPython.js', import.meta.url)
+        : new URL('./botWorker.js', import.meta.url);
+    this.worker = new Worker(workerUrl, {
       type: 'module',
     });
     this.worker.onmessage = (event) => this.handleWorkerMessage(event.data);
@@ -94,7 +108,14 @@ export class PikaBotInput extends PikaUserInput {
   handleWorkerMessage(message) {
     if (message.type === 'initResult') {
       if (this.onInitResult) {
-        this.onInitResult({ ok: message.ok, error: message.error });
+        // Python runner emits progress phases; JS runner emits a single
+        // terminal event. Forward whatever came through so the UI can
+        // decide whether to show "Python 로딩 중..." or a final status.
+        this.onInitResult({
+          phase: message.phase || (message.ok ? 'ok' : 'error'),
+          ok: message.ok,
+          error: message.error,
+        });
       }
       return;
     }

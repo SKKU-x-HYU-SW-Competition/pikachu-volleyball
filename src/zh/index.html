@@ -374,8 +374,9 @@
         <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
           <h1>機器人測試設定</h1>
           <p class="small">
-            左右兩側可以各自獨立設定為鍵盤、你的機器人程式碼、或內建AI。
-            設定需按下「套用」才會生效，屆時遊戲將重新開始。
+            左右兩側可以各自獨立設定為鍵盤、你的機器人程式碼
+            （JavaScript 或 Python）、或內建AI。設定需按下「套用」才會
+            生效，屆時遊戲將重新開始。
           </p>
           <div class="bot-setup-columns">
             <div class="bot-setup-side">
@@ -389,6 +390,15 @@
                 </button>
                 <button type="button" class="btn" data-mode="ai">
                   <span class="check">&check; </span>內建AI
+                </button>
+              </div>
+              <p class="bot-setup-language-label">語言（選擇「機器人程式碼」時適用）：</p>
+              <div class="bot-setup-language-group" id="bot-setup-left-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
                 </button>
               </div>
               <textarea
@@ -414,6 +424,15 @@
                   <span class="check">&check; </span>內建AI
                 </button>
               </div>
+              <p class="bot-setup-language-label">語言（選擇「機器人程式碼」時適用）：</p>
+              <div class="bot-setup-language-group" id="bot-setup-right-language">
+                <button type="button" class="btn selected" data-language="js">
+                  <span class="check">&check; </span>JavaScript
+                </button>
+                <button type="button" class="btn" data-language="py">
+                  <span class="check">&check; </span>Python
+                </button>
+              </div>
               <textarea
                 id="bot-setup-right-source"
                 class="bot-setup-textarea"
@@ -433,6 +452,13 @@
               關閉
             </button>
           </div>
+        </div>
+        <div class="fade-in-box hidden" id="bot-loading-box">
+          <h1>機器人環境設定中</h1>
+          <p id="bot-loading-text">載入機器人程式碼中...</p>
+          <p class="small">
+            首次載入 Python 可能需要幾秒。準備就緒後遊戲會自動開始。
+          </p>
         </div>
         <div class="fade-in-box notice hidden" id="notice-box-1">
           <p>

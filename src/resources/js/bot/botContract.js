@@ -26,12 +26,18 @@ export const NORMAL_FPS = 25;
 export const MS_PER_FRAME = 1000 / NORMAL_FPS; // 40
 
 /**
- * How many engine frames make up one bot decision tick (decision D-001).
- * Kept as a named constant (not hardcoded at call sites) precisely because
- * it may need to change after real testing in Phase 2.
+ * How many engine frames make up one bot decision tick.
+ * Originally 1 (D-001, matching the original per-frame cadence) but raised
+ * to 5 by D-016 for two reasons: (i) multi-language bot support (D-012)
+ * added Pyodide call overhead per tick, and (ii) per-frame decisions made
+ * matches between two well-written bots drag on because both sides always
+ * react instantly -- 5 frames (200ms) gives a human-perceptible reaction
+ * window that widens strategic variance. Still exposed as a constant so
+ * further tuning (3/5/7 etc.) after real matches only needs to touch this
+ * one place.
  * @constant @type {number}
  */
-export const TICK_FRAME_GROUP_SIZE = 1;
+export const TICK_FRAME_GROUP_SIZE = 3;
 
 /**
  * How long to wait for a bot's Worker to respond before treating the tick
@@ -51,6 +57,26 @@ export const MAX_CONSECUTIVE_TIMEOUTS_BEFORE_RESTART = 15;
 
 /** @constant @type {{x: 0, y: 0, hit: 0}} fallback action used on timeout/invalid response */
 export const NEUTRAL_ACTION = Object.freeze({ x: 0, y: 0, hit: 0 });
+
+/**
+ * Supported bot source languages (D-012, D-013). `PikaBotInput` chooses a
+ * different Worker script per language; the on-the-wire protocol
+ * (init/tick/result) is identical in both cases so the game loop side
+ * doesn't have to care which language a given bot is written in.
+ * @constant
+ */
+export const BOT_LANGUAGE = Object.freeze({
+  JS: 'js',
+  PY: 'py',
+});
+
+/**
+ * @param {*} language
+ * @return {boolean}
+ */
+export function isValidBotLanguage(language) {
+  return language === BOT_LANGUAGE.JS || language === BOT_LANGUAGE.PY;
+}
 
 /**
  * Is this a well-formed bot action? (decision D-002: anything else -> neutral)

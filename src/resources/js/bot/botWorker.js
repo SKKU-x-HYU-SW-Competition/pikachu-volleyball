@@ -33,11 +33,20 @@ self.onmessage = function (event) {
           "\n;return (typeof decide === 'function') ? decide : null;"
       );
       decideFn = factory();
-      self.postMessage({ type: 'initResult', ok: decideFn !== null });
+      self.postMessage({
+        type: 'initResult',
+        phase: decideFn !== null ? 'ok' : 'error',
+        ok: decideFn !== null,
+        error:
+          decideFn !== null
+            ? undefined
+            : 'bot not initialized (no top-level `decide` function)',
+      });
     } catch (error) {
       decideFn = null;
       self.postMessage({
         type: 'initResult',
+        phase: 'error',
         ok: false,
         error: String(error && error.message ? error.message : error),
       });

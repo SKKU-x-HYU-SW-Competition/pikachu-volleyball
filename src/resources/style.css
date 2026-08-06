@@ -288,15 +288,22 @@ span.check {
   width: 45%;
   min-width: 240px;
 }
-.bot-setup-mode-group {
+.bot-setup-mode-group,
+.bot-setup-language-group {
   display: flex;
   margin-bottom: 6px;
 }
-.bot-setup-mode-group > .btn {
+.bot-setup-mode-group > .btn,
+.bot-setup-language-group > .btn {
   flex: 1;
   width: auto;
   margin-left: 2px;
   margin-right: 2px;
+}
+.bot-setup-language-label {
+  margin: 4px 0 2px 0;
+  font-size: 0.75em;
+  opacity: 0.8;
 }
 .bot-setup-textarea {
   box-sizing: border-box;
