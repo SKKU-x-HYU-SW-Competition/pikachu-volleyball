@@ -22,13 +22,6 @@
  */
 const PYODIDE_INDEX_URL = new URL('../../../pyodide/', import.meta.url).href;
 
-/**
- * Fallback location for package wheels not present locally (numpy etc.).
- * TODO(ADR-0014): download wheels via postinstall so this can be dropped
- * and the whole thing runs fully offline.
- */
-const PYODIDE_PACKAGE_CDN = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
-
 /** @type {any} */
 let pyodide = null;
 /** @type {any} the participant's Python `decide` function, once loaded */
@@ -61,13 +54,7 @@ function toPlainJs(result) {
 async function bootstrap(source) {
   self.postMessage({ type: 'initResult', phase: 'loadingPyodide' });
   const { loadPyodide } = await import(PYODIDE_INDEX_URL + 'pyodide.mjs');
-  pyodide = await loadPyodide({
-    indexURL: PYODIDE_INDEX_URL,
-    packageBaseUrl: PYODIDE_PACKAGE_CDN,
-  });
-
-  self.postMessage({ type: 'initResult', phase: 'loadingNumpy' });
-  await pyodide.loadPackage('numpy');
+  pyodide = await loadPyodide({ indexURL: PYODIDE_INDEX_URL });
 
   self.postMessage({ type: 'initResult', phase: 'runningSource' });
   // runPython evaluates the whole source in the interpreter's __main__

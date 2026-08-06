@@ -37,7 +37,7 @@ export const MS_PER_FRAME = 1000 / NORMAL_FPS; // 40
  * one place.
  * @constant @type {number}
  */
-export const TICK_FRAME_GROUP_SIZE = 5;
+export const TICK_FRAME_GROUP_SIZE = 3;
 
 /**
  * How long to wait for a bot's Worker to respond before treating the tick
