@@ -91,10 +91,10 @@
 1. **스킬 효과가 무엇인가** — 강화 스매시 / 대시 / 궤적 조작 등 미정. 여기서부터는 정말로
    `physics.js` 수정이 필요할 수 있고, 그때가 Tier B의 실제 진입점이다.
 2. **스킬 개수와 각 소모량** — 위 §4의 40/70은 설명용 예시일 뿐 확정값이 아니다.
-3. **봇 프로토콜 확장** — 봇이 게이지를 못 보면 스킬을 쓸 수 없으므로 스냅샷에
-   `self.gauge`/`opp.gauge` 추가가 필요하고, 발동 입력도 현재의 `{x, y, hit}` 3필드로는 표현이
-   안 된다(4번째 필드 `skill` 등). 둘 다 [CONTRACTS.md](../CONTRACTS.md) 버전업 대상이며, 이미
-   짜여진 참가자 봇과의 하위 호환도 함께 봐야 한다.
+3. ~~**봇 프로토콜 확장**~~ → **해소됨**: 발동 입력은 4번째 액션 필드 `skillX`
+   ([ADR-0022](ADR-0022-bot-skill-action-field.md), CONTRACTS.md v0.6), 스냅샷의
+   `self.gauge`/`opp.gauge`는 [ADR-0023](ADR-0023-snapshot-skill-state.md)(v0.7)으로 들어갔다.
+   여기서 예상한 배치(`self.gauge`/`opp.gauge`) 그대로이고, 기존 3필드 봇은 무변경으로 동작한다.
 4. **사람 플레이어의 발동 키** — `PikaKeyboard`에 키를 추가할지
    ([02-input-keyboard.md §6](../../architecture/02-input-keyboard.md) 절차).
 5. **게이지 바에 스킬 소모량 눈금을 표시할지** — §2의 소모량이 정해져야 그릴 수 있어서 이번

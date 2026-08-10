@@ -60,11 +60,12 @@ Worker 전용), 이 구조상 봇의 반응에는 항상 약 1틱(`TICK_FRAME_GR
 읽기만 하고 아무것도 바꾸지 않는다. 호출 지점은 `PikaBotInput.getInput()` 내부, 위 1절의 2번 시점
 ([botInput.js:178-184](../../src/resources/js/bot/botInput.js#L178-L184)).
 
-필드는 전부 기존 엔진 값을 그대로 노출한 것이고 새로 계산해서 지어낸 값은 없다:
+필드는 엔진 값 + 엔진 밖 스킬 계층 값이고, 봇 편의를 위해 새로 계산해 지어낸 값은 없다:
 
 | 스냅샷 필드 | 출처 (physics.js) |
 |---|---|
-| `self`/`opp`.`x`/`y`/`state`/`frameNumber`/`divingDirection` | `Player` 인스턴스 필드 그대로 ([physics.js:124](../../src/resources/js/physics.js#L124)) |
+| `self`/`opp`.`x`/`y`/`state`/`frameNumber`/`divingDirection`/`lyingDownDurationLeft` | `Player` 인스턴스 필드 그대로 ([physics.js:124](../../src/resources/js/physics.js#L124)) |
+| `self`/`opp`.`gauge`, `self`/`opp`.`claw`, `config.gauge`, `config.claw` | 엔진이 아니라 **스킬 계층**([skill/setup.js](../../src/resources/js/skill/setup.js)의 `getSkillState`)이 주입한다. 인덱스(player1/player2) 기준으로 들어와서 빌더가 `self`/`opp`로 뒤집는다 (D-023) |
 | `ball.x`/`y`/`xVelocity`/`yVelocity`/`isPowerHit` | `Ball` 인스턴스 필드 그대로 ([physics.js:226](../../src/resources/js/physics.js#L226)) |
 | `ball.expectedLandingPointX` | 엔진이 매 프레임 이미 계산해두는 값, 기본 AI도 이걸로 판단함 ([physics.js:323](../../src/resources/js/physics.js#L323), [physics.js:808-857](../../src/resources/js/physics.js#L808-L857)) |
 | `meta.score` / `meta.isPlayer2Serve` | `pikavolley.js`의 `this.scores` / `this.isPlayer2Serve` (원본 필드, 변경 없음) |

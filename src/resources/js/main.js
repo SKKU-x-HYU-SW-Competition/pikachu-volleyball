@@ -44,7 +44,7 @@ import { PikachuVolleyball } from './pikavolley.js';
 import { ASSETS_PATH } from './assets_path.js';
 import { setUpUI } from './ui.js';
 import { setUpBotTestUI } from './bot/testSetup.js';
-import { setUpGauge, setUpClaw } from './skill/setup.js';
+import { setUpSkills } from './skill/setup.js';
 
 // Reference for how to use Renderer.registerPlugin:
 // https://github.com/pixijs/pixijs/blob/af3c0c6bb15aeb1049178c972e4a14bb4cabfce4/bundles/pixi.js/src/index.ts#L27-L34
@@ -150,12 +150,15 @@ function setUpInitialUI() {
 function setup() {
   const pikaVolley = new PikachuVolleyball(stage, loader.resources);
   setUpUI(pikaVolley, ticker);
-  setUpBotTestUI(pikaVolley, ticker); // Phase 2 test environment, see bot/testSetup.js
+  // Phase 4 skills (gauge + claw). Built before the bot UI because bots read
+  // gauge/claw state for every snapshot they send (D-023); its per-frame
+  // observation is registered after start() so the callback sees the frame
+  // gameLoop() just simulated rather than the previous one. See skill/setup.js.
+  const skills = setUpSkills(pikaVolley, loader.resources);
+  // Phase 2 test environment, see bot/testSetup.js
+  setUpBotTestUI(pikaVolley, ticker, skills.getSkillState);
   start(pikaVolley);
-  // After start() so that its tick callback observes the frame gameLoop() just
-  // simulated rather than the previous one. See skill/setup.js.
-  const gaugeTracker = setUpGauge(pikaVolley, ticker); // Phase 4 gauge, see skill/setup.js
-  setUpClaw(pikaVolley, ticker, loader.resources, gaugeTracker); // Phase 4-B claw skill
+  skills.startObserving(ticker);
 }
 
 /**

@@ -167,11 +167,18 @@ def decide(s):
 {
   "tick": 12345,
   "side": "LEFT",
-  "self":  { "x": 120, "y": 244, "state": 0, "frameNumber": 3, "divingDirection": 0 },
-  "opp":   { "x": 300, "y": 180, "state": 1, "frameNumber": 5, "divingDirection": 0 },
+  "self":  { "x": 120, "y": 244, "state": 0, "frameNumber": 3, "divingDirection": 0,
+             "lyingDownDurationLeft": -1, "gauge": 70, "claw": null },
+  "opp":   { "x": 300, "y": 180, "state": 1, "frameNumber": 5, "divingDirection": 0,
+             "lyingDownDurationLeft": -1, "gauge": 30,
+             "claw": { "centerX": 120, "framesUntilStrike": 12, "framesLeftActive": 0 } },
   "ball":  { "x": 216, "y": 140, "xVelocity": -3, "yVelocity": 6, "expectedLandingPointX": 340, "isPowerHit": false },
   "meta":  { "score": { "self": 7, "opp": 6 }, "isPlayer2Serve": false, "rallyFrameCount": 42 },
-  "config": { "tickFrameGroupSize": 1 }
+  "config": {
+    "tickFrameGroupSize": 3,
+    "gauge": { "min": 0, "max": 100, "onReceive": 10, "onExtraTouch": -5, "onServe": 0 },
+    "claw":  { "cost": 50, "width": 96, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
+  }
 }
 ```
 
@@ -181,6 +188,10 @@ def decide(s):
 | `side` | `'LEFT'` 또는 `'RIGHT'` — 내가 어느 진영인지 |
 | `self` / `opp` | 나 / 상대의 `x`, `y`, `state`, `frameNumber`, `divingDirection`. **완전 대칭 정보**라 상대 것도 다 보임 |
 | `self.state` / `opp.state` | 아래 4.2절 표 참고 |
+| `self.lyingDownDurationLeft` | `state === 4`(누움/기절)일 때만 의미 있음. **움직일 수 있게 되기까지 `값 + 2` 프레임** |
+| `self.gauge` / `opp.gauge` | 현재 게이지 `0~100`. 상대 것도 보임 (아래 4.4절) |
+| `self.claw` / `opp.claw` | 예고 중인 발톱, 없으면 `null`. **시전자 기준**이라 `opp.claw`가 나를 노리는 것 (아래 4.4절) |
+| `config.gauge` / `config.claw` | 게이지·스킬 수치. **하드코딩하지 말고 여기서 읽을 것** (아래 4.4절) |
 | `ball.x/y` | 공 좌표 |
 | `ball.xVelocity/yVelocity` | 공 속도 |
 | `ball.expectedLandingPointX` | 엔진이 이미 계산해둔, 공의 예상 낙하 x좌표 (기본 AI도 이걸로 판단) |
@@ -202,7 +213,7 @@ def decide(s):
 | 1 | 점프 중 | 이 상태에서 `hit=1`이면 파워히트 발동 |
 | 2 | 파워히트 동작 중 | 스매시 애니메이션 진행 중, 새 입력으로 못 바꿈 |
 | 3 | 다이빙 중 | |
-| 4 | 다이빙 후 누워있음 | |
+| 4 | 다이빙 후 누워있음 **또는 발톱에 맞아 기절** | 이동·점프·파워히트 입력이 전부 무시된다. 남은 시간은 `lyingDownDurationLeft + 2` 프레임 |
 | 5 | 승리 모션 | 경기 종료 시 |
 | 6 | 패배 모션 | 경기 종료 시 |
 
@@ -232,8 +243,7 @@ return { x: 0, y: 0, hit: 0, skillX: 300 }; // x=300을 중심으로 발톱 예�
 return {'x': 0, 'y': 0, 'hit': 0, 'skillX': 300}
 ```
 
-- **게이지 50**을 소모한다. 게이지는 상대에게서 넘어온 공을 처음 받으면 +10, 자기 진영에서 이어
-  치면 -5로 쌓이며 0~100 범위다 (경기 시작 시 0으로 리셋).
+- **게이지 `config.claw.cost`(현재 50)** 를 소모한다. 지금 얼마 있는지는 `self.gauge`로 확인한다.
 - 발동하면 **1초 뒤** 그 x를 중심으로 폭 96px 기둥에 발톱이 생긴다. 그 순간 범위 안에 있는
   플레이어는 **1초간 기절**(이동 불가)하고, 공중이었다면 즉시 땅으로 떨어진다.
 - **판정은 x축만 본다** — 그 x 범위 안이면 높이에 상관없이 맞는다. 점프로는 못 피하고, 예고 1초
@@ -244,9 +254,54 @@ return {'x': 0, 'y': 0, 'hit': 0, 'skillX': 300}
 - **한 응답당 최대 1회** 발동한다. 매 틱 같은 `skillX`를 계속 돌려줘도 게이지가 반복 소모되지는 않지만,
   발동 가능한 순간마다 자동으로 나가므로 "언제 쓸지"는 직접 조건을 걸어 정하는 편이 좋다.
 
-> **주의 (현재 제약)**: 아직 스냅샷에 게이지와 "예고 중인 발톱" 정보가 들어 있지 않다. 즉 봇은 자기
-> 게이지가 얼마인지 알 수 없고, 자기가 노려지고 있는지도 알 수 없어 **회피가 불가능**하다. 이 두
-> 정보는 곧 스냅샷에 추가될 예정이다.
+### 4.4 스킬 관련 스냅샷 필드 (게이지 / 발톱 / 수치)
+
+발동뿐 아니라 **관리와 회피**에 필요한 정보가 전부 스냅샷에 들어 있다 (CONTRACTS.md v0.7).
+
+#### 게이지
+
+```js
+if (s.self.gauge >= s.config.claw.cost) { /* 발동 가능 */ }
+```
+
+- `0 ~ config.gauge.max`(100) 범위. 상대에게서 넘어온 공을 처음 받으면 `config.gauge.onReceive`(+10),
+  자기 진영에서 이어 치면 `config.gauge.onExtraTouch`(-5), 서브는 `config.gauge.onServe`(0)다.
+  즉 **한 번에 깔끔하게 넘길수록 이득**이고, 경기 시작 시 0으로 리셋된다(랠리가 끝나도 유지).
+- `opp.gauge`도 보인다. 상대가 `config.claw.cost` 이상이면 언제든 맞을 수 있다는 뜻이다.
+
+#### 예고 중인 발톱 — **`opp.claw`가 나를 노리는 것**
+
+발톱은 **시전자 밑에** 붙는다. 피해자는 항상 시전자의 상대이므로:
+
+| | 의미 |
+|---|---|
+| `opp.claw` | **상대가 쏜 것 = 나를 노리는 것.** 회피 판단은 이걸 본다 |
+| `self.claw` | 내가 쏜 것. `null`이 아니면 재발동이 거절되므로 "지금 쏠 수 있나"의 판단 재료 |
+
+```js
+// 맞는 조건: 발톱은 x축만 본다 (점프로는 못 피한다)
+var incoming = s.opp.claw;
+if (incoming && incoming.framesUntilStrike > 0) {
+  var danger = s.config.claw.width / 2 + 32; // 32 = 플레이어 히트박스 반폭
+  if (Math.abs(s.self.x - incoming.centerX) <= danger) {
+    // 아직 framesUntilStrike 프레임 남았다 -- 좌우로 벗어나면 산다
+  }
+}
+```
+
+- `framesUntilStrike`가 `0`이면 이미 터졌고 연출(`framesLeftActive`)만 남은 상태다.
+- **마지막 몇 프레임은 믿지 마라.** 스냅샷은 직전 프레임 상태이고 봇 응답에는 약 1틱 지연이
+  있으므로(§1.0), 실제 회피 여유는 `framesUntilStrike`보다 최대 6프레임쯤 짧다.
+- 맞으면 `self.state === 4`가 되고 `lyingDownDurationLeft + 2` 프레임 동안 입력이 전부 무시된다.
+
+#### 수치는 `config`에서 읽어라
+
+`config.claw`/`config.gauge`의 값들은 **아직 확정 전이고 대회 준비 중에 조정될 수 있다.**
+소스에 `50`이나 `96`을 박아두면 값이 바뀌는 날 **에러 하나 없이 조용히 틀린 판단**을 하게 된다.
+매 틱 스냅샷으로 오니 그걸 읽어 쓰는 편이 안전하다.
+
+> 「Load example bot」 버튼의 예제 봇에 위 세 가지(게이지 확인 → 발동 / 회피 / `config` 읽기)의
+> 최소 구현이 들어 있다. 전략적으로 좋은 봇은 아니고 **어떤 필드를 어떻게 읽는지**의 예시다.
 
 ## 5. `{x, y, hit}`이 실제로 만드는 동작
 

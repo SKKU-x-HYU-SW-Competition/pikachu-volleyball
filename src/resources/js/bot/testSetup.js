@@ -86,8 +86,12 @@ const SIDE_INFO = {
 /**
  * @param {import('../pikavolley.js').PikachuVolleyball} pikaVolley
  * @param {import('@pixi/ticker').Ticker} ticker
+ * @param {function(): ?Object} [getSkillState] reads the skill layer's live
+ *   gauge/claw state for the bots' snapshots (D-023). Passed straight through
+ *   to every PikaBotInput built here; omitting it just leaves those snapshot
+ *   fields null.
  */
-export function setUpBotTestUI(pikaVolley, ticker) {
+export function setUpBotTestUI(pikaVolley, ticker, getSkillState) {
   const els = collectElements();
   if (!els) {
     // Markup not present in this locale's HTML -- nothing to wire up.
@@ -240,11 +244,15 @@ export function setUpBotTestUI(pikaVolley, ticker) {
     try {
       await Promise.all(
         sidesToBuild.map((side) =>
-          createBotInputAsync(pikaVolley, side, newConfig[side], els).then(
-            (input) => {
-              activeBotInputs[side] = input;
-            }
-          )
+          createBotInputAsync(
+            pikaVolley,
+            side,
+            newConfig[side],
+            els,
+            getSkillState
+          ).then((input) => {
+            activeBotInputs[side] = input;
+          })
         )
       );
     } finally {
@@ -272,9 +280,10 @@ export function setUpBotTestUI(pikaVolley, ticker) {
  * @param {'left'|'right'} side
  * @param {SideConfig} sideConfig
  * @param {ReturnType<typeof collectElements>} els
+ * @param {function(): ?Object} [getSkillState] see setUpBotTestUI
  * @return {Promise<PikaBotInput>}
  */
-function createBotInputAsync(pikaVolley, side, sideConfig, els) {
+function createBotInputAsync(pikaVolley, side, sideConfig, els, getSkillState) {
   return new Promise((resolve) => {
     let settled = false;
     const finish = (ret) => {
@@ -304,6 +313,7 @@ function createBotInputAsync(pikaVolley, side, sideConfig, els) {
       }),
       botSource: sideConfig.source,
       language: sideConfig.language,
+      getSkillState: getSkillState,
       onInitResult: (event) => {
         setStatus(els, side, initPhaseToStatus(sideConfig.language, event));
         if (event.phase === 'ok' || event.phase === 'error') {
