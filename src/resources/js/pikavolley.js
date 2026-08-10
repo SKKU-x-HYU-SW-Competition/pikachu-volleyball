@@ -26,7 +26,7 @@ export class PikachuVolleyball {
       intro: new IntroView(resources),
       menu: new MenuView(resources),
       game: new GameView(resources),
-      fadeInOut: new FadeInOut(resources),
+      fadeInOut: new FadeInOut(),
     };
     stage.addChild(this.view.intro.container);
     stage.addChild(this.view.menu.container);
@@ -180,8 +180,7 @@ export class PikachuVolleyball {
       this.view.menu.selectWithWho(this.selectedWithWho);
     }
     this.view.menu.drawFightMessage(this.frameCounter);
-    this.view.menu.drawSachisoft(this.frameCounter);
-    this.view.menu.drawSittingPikachuTiles(this.frameCounter);
+    this.view.menu.drawPengsooMenuBackground(this.frameCounter);
     this.view.menu.drawPikachuVolleyballMessage(this.frameCounter);
     this.view.menu.drawPokemonMessage(this.frameCounter);
     this.view.menu.drawWithWhoMessages(this.frameCounter);

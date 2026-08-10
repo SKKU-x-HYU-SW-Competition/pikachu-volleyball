@@ -63,8 +63,8 @@ settings.SCALE_MODE = SCALE_MODES.NEAREST;
 settings.ROUND_PIXELS = true;
 
 const renderer = autoDetectRenderer({
-  width: 432,
-  height: 304,
+  width: 432 * ASSETS_PATH.RATIO,
+  height: 304 * ASSETS_PATH.RATIO,
   antialias: false,
   backgroundColor: 0x000000,
   backgroundAlpha: 1,
@@ -85,6 +85,8 @@ document.getElementById('game-canvas-container').appendChild(renderer.view);
 renderer.render(stage); // To make the initial canvas painting stable in the Firefox browser.
 
 loader.add(ASSETS_PATH.SPRITE_SHEET);
+loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_LEFT);
+loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_RIGHT);
 for (const prop in ASSETS_PATH.SOUNDS) {
   loader.add(ASSETS_PATH.SOUNDS[prop]);
 }
