@@ -17,6 +17,18 @@ import { ASSETS_PATH } from './assets_path.js';
 
 const TEXTURES = ASSETS_PATH.TEXTURES;
 
+/**
+ * @constant @type {number}
+ * Ratio between the physics coordinate system (the original 432x304 integer
+ * pixel space, see docs/agent-dev/CONTRACTS.md 1.2) and the view coordinate
+ * system. The physics engine is never scaled -- only what gets drawn is.
+ *
+ * Rule of thumb when editing this file: multiply hard-coded layout numbers and
+ * values coming out of the physics/cloud models, but NOT sizes read off a
+ * texture (`texture.width` etc.) -- those already grow with the assets.
+ */
+const RATIO = ASSETS_PATH.RATIO;
+
 /** @constant @type {number} number of clouds to be rendered */
 const NUM_OF_CLOUDS = 10;
 
@@ -32,8 +44,8 @@ export class IntroView {
     const textures = resources[ASSETS_PATH.SPRITE_SHEET].textures;
 
     this.mark = makeSpriteWithAnchorXY(textures, TEXTURES.MARK, 0.5, 0.5);
-    this.mark.x = 432 / 2;
-    this.mark.y = 304 / 2;
+    this.mark.x = (RATIO * 432) / 2;
+    this.mark.y = (RATIO * 304) / 2;
 
     this.container = new Container();
     this.container.addChild(this.mark);
@@ -97,14 +109,15 @@ export class MenuView {
       makeSittingPikachuTilesContainer(textures);
 
     // referred to FUN_004059f0
-    this.messages.sachisoft.x = 216 - this.messages.sachisoft.texture.width / 2;
-    this.messages.sachisoft.y = 264;
+    this.messages.sachisoft.x =
+      RATIO * 216 - this.messages.sachisoft.texture.width / 2;
+    this.messages.sachisoft.y = RATIO * 264;
 
     // referred to FUN_00405b70
-    this.messages.pikachuVolleyball.x = 140;
-    this.messages.pikachuVolleyball.y = 80;
-    this.messages.pokemon.x = 170;
-    this.messages.pokemon.y = 40;
+    this.messages.pikachuVolleyball.x = RATIO * 140;
+    this.messages.pikachuVolleyball.y = RATIO * 80;
+    this.messages.pokemon.x = RATIO * 170;
+    this.messages.pokemon.y = RATIO * 40;
 
     this.container = new Container();
     this.container.addChild(this.sittingPikachuTilesContainer);
@@ -162,8 +175,8 @@ export class MenuView {
       const halfHeight = Math.floor(Math.floor((frameCounter * h) / 30) / 2);
       fightMessage.width = halfWidth * 2; // width
       fightMessage.height = halfHeight * 2; // height
-      fightMessage.x = 100 - halfWidth; // x coord
-      fightMessage.y = 70 - halfHeight; // y coord
+      fightMessage.x = RATIO * 100 - halfWidth; // x coord
+      fightMessage.y = RATIO * 70 - halfHeight; // y coord
     } else {
       const index = (frameCounter + 1) % 9;
       // code ...
@@ -173,8 +186,8 @@ export class MenuView {
       );
       fightMessage.width = halfWidth * 2; // width
       fightMessage.height = halfHeight * 2; // height
-      fightMessage.y = 70 - halfHeight; // y coord
-      fightMessage.x = 100 - halfWidth; // x coord
+      fightMessage.y = RATIO * 70 - halfHeight; // y coord
+      fightMessage.x = RATIO * 100 - halfWidth; // x coord
     }
   }
 
@@ -211,8 +224,10 @@ export class MenuView {
     // movement
     // @ts-ignore
     const h = this.sittingPikachuTilesContainer.getChildAt(0).texture.height;
+    // The scroll step is a logical distance, so it scales with RATIO; `h` is a
+    // texture height and already does, which keeps the scroll speed unchanged.
     this.sittingPikachuTilesDisplacement =
-      (this.sittingPikachuTilesDisplacement + 2) % h;
+      (this.sittingPikachuTilesDisplacement + RATIO * 2) % h;
     this.sittingPikachuTilesContainer.x = -this.sittingPikachuTilesDisplacement;
     this.sittingPikachuTilesContainer.y = -this.sittingPikachuTilesDisplacement;
 
@@ -246,15 +261,17 @@ export class MenuView {
 
     if (frameCounter > 30 && frameCounter <= 44) {
       const xDiff = 195 - 15 * (frameCounter - 30);
-      this.messages.pikachuVolleyball.x = 140 + xDiff;
+      this.messages.pikachuVolleyball.x = RATIO * (140 + xDiff);
     } else if (frameCounter > 44 && frameCounter <= 55) {
-      this.messages.pikachuVolleyball.x = 140;
-      this.messages.pikachuVolleyball.width = 200 - 15 * (frameCounter - 44);
+      this.messages.pikachuVolleyball.x = RATIO * 140;
+      this.messages.pikachuVolleyball.width =
+        RATIO * (200 - 15 * (frameCounter - 44));
     } else if (frameCounter > 55 && frameCounter <= 71) {
-      this.messages.pikachuVolleyball.x = 140;
-      this.messages.pikachuVolleyball.width = 40 + 15 * (frameCounter - 55);
+      this.messages.pikachuVolleyball.x = RATIO * 140;
+      this.messages.pikachuVolleyball.width =
+        RATIO * (40 + 15 * (frameCounter - 55));
     } else if (frameCounter > 71) {
-      this.messages.pikachuVolleyball.x = 140;
+      this.messages.pikachuVolleyball.x = RATIO * 140;
       this.messages.pikachuVolleyball.width =
         this.messages.pikachuVolleyball.texture.width;
     }
@@ -305,10 +322,10 @@ export class MenuView {
           selected * this.selectedWithWhoMessageSizeIncrement;
 
         withWho[i].visible = true;
-        withWho[i].x = 216 - w / 2 - halfWidthIncrement;
-        withWho[i].y = 184 + 30 * i - halfHeightIncrement;
-        withWho[i].width = w + 2 * halfWidthIncrement;
-        withWho[i].height = h + 2 * halfHeightIncrement;
+        withWho[i].x = RATIO * 216 - w / 2 - RATIO * halfWidthIncrement;
+        withWho[i].y = RATIO * (184 + 30 * i - halfHeightIncrement);
+        withWho[i].width = w + RATIO * 2 * halfWidthIncrement;
+        withWho[i].height = h + RATIO * 2 * halfHeightIncrement;
       }
     }
   }
@@ -410,16 +427,16 @@ export class GameView {
     this.waveContainer.x = 0;
     this.waveContainer.y = 0;
 
-    this.messages.ready.x = 176;
-    this.messages.ready.y = 38;
-    this.scoreBoards[0].x = 14; // score board is 14 pixel distant from boundary
-    this.scoreBoards[0].y = 10;
-    this.scoreBoards[1].x = 432 - 32 - 32 - 14; // 32 pixel is for number (32x32px) width; one score board has two numbers
-    this.scoreBoards[1].y = 10;
+    this.messages.ready.x = RATIO * 176;
+    this.messages.ready.y = RATIO * 38;
+    this.scoreBoards[0].x = RATIO * 14; // score board is 14 pixel distant from boundary
+    this.scoreBoards[0].y = RATIO * 10;
+    this.scoreBoards[1].x = RATIO * (432 - 32 - 32 - 14); // 32 pixel is for number (32x32px) width; one score board has two numbers
+    this.scoreBoards[1].y = RATIO * 10;
 
-    this.shadows.forPlayer1.y = 273;
-    this.shadows.forPlayer2.y = 273;
-    this.shadows.forBall.y = 273;
+    this.shadows.forPlayer1.y = RATIO * 273;
+    this.shadows.forPlayer2.y = RATIO * 273;
+    this.shadows.forBall.y = RATIO * 273;
 
     this.initializeVisibles();
 
@@ -464,23 +481,24 @@ export class GameView {
     const player2 = physics.player2;
     const ball = physics.ball;
 
-    this.player1.x = player1.x;
-    this.player1.y = player1.y;
+    this.player1.x = RATIO * player1.x;
+    this.player1.y = RATIO * player1.y;
+    // scale.x here is a horizontal flip (+1/-1), not a size -- never scale it.
     if (player1.state === 3 || player1.state === 4) {
       this.player1.scale.x = player1.divingDirection === -1 ? -1 : 1;
     } else {
       this.player1.scale.x = 1;
     }
-    this.shadows.forPlayer1.x = player1.x;
+    this.shadows.forPlayer1.x = RATIO * player1.x;
 
-    this.player2.x = player2.x;
-    this.player2.y = player2.y;
+    this.player2.x = RATIO * player2.x;
+    this.player2.y = RATIO * player2.y;
     if (player2.state === 3 || player2.state === 4) {
       this.player2.scale.x = player2.divingDirection === 1 ? 1 : -1;
     } else {
       this.player2.scale.x = -1;
     }
-    this.shadows.forPlayer2.x = player2.x;
+    this.shadows.forPlayer2.x = RATIO * player2.x;
 
     const frameNumber1 = getFrameNumberForPlayerAnimatedSprite(
       player1.state,
@@ -493,28 +511,28 @@ export class GameView {
     this.player1.gotoAndStop(frameNumber1);
     this.player2.gotoAndStop(frameNumber2);
 
-    this.ball.x = ball.x;
-    this.ball.y = ball.y;
-    this.shadows.forBall.x = ball.x;
+    this.ball.x = RATIO * ball.x;
+    this.ball.y = RATIO * ball.y;
+    this.shadows.forBall.x = RATIO * ball.x;
     this.ball.gotoAndStop(ball.rotation);
 
     // For punch effect, refer FUN_00402ee0
     if (ball.punchEffectRadius > 0) {
       ball.punchEffectRadius -= 2;
-      this.punch.width = 2 * ball.punchEffectRadius;
-      this.punch.height = 2 * ball.punchEffectRadius;
-      this.punch.x = ball.punchEffectX;
-      this.punch.y = ball.punchEffectY;
+      this.punch.width = RATIO * 2 * ball.punchEffectRadius;
+      this.punch.height = RATIO * 2 * ball.punchEffectRadius;
+      this.punch.x = RATIO * ball.punchEffectX;
+      this.punch.y = RATIO * ball.punchEffectY;
       this.punch.visible = true;
     } else {
       this.punch.visible = false;
     }
 
     if (ball.isPowerHit === true) {
-      this.ballHyper.x = ball.previousX;
-      this.ballHyper.y = ball.previousY;
-      this.ballTrail.x = ball.previousPreviousX;
-      this.ballTrail.y = ball.previousPreviousY;
+      this.ballHyper.x = RATIO * ball.previousX;
+      this.ballHyper.y = RATIO * ball.previousY;
+      this.ballTrail.x = RATIO * ball.previousPreviousX;
+      this.ballTrail.y = RATIO * ball.previousPreviousY;
 
       this.ballHyper.visible = true;
       this.ballTrail.visible = true;
@@ -558,17 +576,19 @@ export class GameView {
     for (let i = 0; i < NUM_OF_CLOUDS; i++) {
       const cloud = cloudArray[i];
       const cloudSprite = this.cloudContainer.getChildAt(i);
-      cloudSprite.x = cloud.spriteTopLeftPointX;
-      cloudSprite.y = cloud.spriteTopLeftPointY;
+      cloudSprite.x = RATIO * cloud.spriteTopLeftPointX;
+      cloudSprite.y = RATIO * cloud.spriteTopLeftPointY;
       // @ts-ignore
-      cloudSprite.width = cloud.spriteWidth;
+      cloudSprite.width = RATIO * cloud.spriteWidth;
       // @ts-ignore
-      cloudSprite.height = cloud.spriteHeight;
+      cloudSprite.height = RATIO * cloud.spriteHeight;
     }
 
+    // 432 / 16 is a tile *count*, not a coordinate -- both the canvas and the
+    // tiles grow with RATIO, so the number of tiles stays the same.
     for (let i = 0; i < 432 / 16; i++) {
       const waveSprite = this.waveContainer.getChildAt(i);
-      waveSprite.y = wave.yCoords[i];
+      waveSprite.y = RATIO * wave.yCoords[i];
     }
   }
 
@@ -592,8 +612,8 @@ export class GameView {
     const h = gameStartMessage.texture.height; // game start message texture height
     const halfWidth = Math.floor((w * frameCounter) / 50);
     const halfHeight = Math.floor((h * frameCounter) / 50);
-    gameStartMessage.x = 216 - halfWidth;
-    gameStartMessage.y = 50 + 2 * halfHeight;
+    gameStartMessage.x = RATIO * 216 - halfWidth;
+    gameStartMessage.y = RATIO * 50 + 2 * halfHeight;
     gameStartMessage.width = 2 * halfWidth;
     gameStartMessage.height = 2 * halfHeight;
   }
@@ -632,13 +652,13 @@ export class GameView {
       const halfHeightIncrement =
         2 * Math.floor(((50 - frameCounter) * h) / 50);
 
-      gameEndMessage.x = 216 - w / 2 - halfWidthIncrement;
-      gameEndMessage.y = 50 - halfHeightIncrement;
+      gameEndMessage.x = RATIO * 216 - w / 2 - halfWidthIncrement;
+      gameEndMessage.y = RATIO * 50 - halfHeightIncrement;
       gameEndMessage.width = w + 2 * halfWidthIncrement;
       gameEndMessage.height = h + 2 * halfHeightIncrement;
     } else {
-      gameEndMessage.x = 216 - w / 2;
-      gameEndMessage.y = 50;
+      gameEndMessage.x = RATIO * 216 - w / 2;
+      gameEndMessage.y = RATIO * 50;
       gameEndMessage.width = w;
       gameEndMessage.height = h;
     }
@@ -652,8 +672,8 @@ export class FadeInOut {
   constructor(resources) {
     const textures = resources[ASSETS_PATH.SPRITE_SHEET].textures;
     this.black = makeSpriteWithAnchorXY(textures, TEXTURES.BLACK, 0, 0);
-    this.black.width = 432;
-    this.black.height = 304;
+    this.black.width = RATIO * 432;
+    this.black.height = RATIO * 304;
     this.black.x = 0;
     this.black.y = 0;
     this.black.alpha = 1;
@@ -712,8 +732,10 @@ function makeSittingPikachuTilesContainer(textures) {
   const h = texture.height;
 
   let tile;
-  for (let j = 0; j < Math.floor(304 / h) + 2; j++) {
-    for (let i = 0; i < Math.floor(432 / w) + 2; i++) {
+  // `w`/`h` are texture sizes, so they already grow with the assets: the canvas
+  // side has to be scaled here for the tile count to still cover the screen.
+  for (let j = 0; j < Math.floor((RATIO * 304) / h) + 2; j++) {
+    for (let i = 0; i < Math.floor((RATIO * 432) / w) + 2; i++) {
       tile = new Sprite(texture);
       addChildToParentAndSetLocalPosition(container, tile, w * i, h * j);
     }
@@ -733,37 +755,59 @@ function makeBGContainer(textures) {
   // sky
   let tile;
   let texture = textures[TEXTURES.SKY_BLUE];
+  // The loop bounds below are tile *counts* -- the tiles grow with the canvas,
+  // so the counts stay the same. Only the positions are scaled.
   for (let j = 0; j < 12; j++) {
     for (let i = 0; i < 432 / 16; i++) {
       tile = new Sprite(texture);
-      addChildToParentAndSetLocalPosition(bgContainer, tile, 16 * i, 16 * j);
+      addChildToParentAndSetLocalPosition(
+        bgContainer,
+        tile,
+        RATIO * 16 * i,
+        RATIO * 16 * j
+      );
     }
   }
 
   // mountain
   texture = textures[TEXTURES.MOUNTAIN];
   tile = new Sprite(texture);
-  addChildToParentAndSetLocalPosition(bgContainer, tile, 0, 188);
+  addChildToParentAndSetLocalPosition(bgContainer, tile, 0, RATIO * 188);
 
   // ground_red
   texture = textures[TEXTURES.GROUND_RED];
   for (let i = 0; i < 432 / 16; i++) {
     tile = new Sprite(texture);
-    addChildToParentAndSetLocalPosition(bgContainer, tile, 16 * i, 248);
+    addChildToParentAndSetLocalPosition(
+      bgContainer,
+      tile,
+      RATIO * 16 * i,
+      RATIO * 248
+    );
   }
 
   // ground_line
   texture = textures[TEXTURES.GROUND_LINE];
   for (let i = 1; i < 432 / 16 - 1; i++) {
     tile = new Sprite(texture);
-    addChildToParentAndSetLocalPosition(bgContainer, tile, 16 * i, 264);
+    addChildToParentAndSetLocalPosition(
+      bgContainer,
+      tile,
+      RATIO * 16 * i,
+      RATIO * 264
+    );
   }
   texture = textures[TEXTURES.GROUND_LINE_LEFT_MOST];
   tile = new Sprite(texture);
-  addChildToParentAndSetLocalPosition(bgContainer, tile, 0, 264);
+  addChildToParentAndSetLocalPosition(bgContainer, tile, 0, RATIO * 264);
   texture = textures[TEXTURES.GROUND_LINE_RIGHT_MOST];
   tile = new Sprite(texture);
-  addChildToParentAndSetLocalPosition(bgContainer, tile, 432 - 16, 264);
+  addChildToParentAndSetLocalPosition(
+    bgContainer,
+    tile,
+    RATIO * (432 - 16),
+    RATIO * 264
+  );
 
   // ground_yellow
   texture = textures[TEXTURES.GROUND_YELLOW];
@@ -773,8 +817,8 @@ function makeBGContainer(textures) {
       addChildToParentAndSetLocalPosition(
         bgContainer,
         tile,
-        16 * i,
-        280 + 16 * j
+        RATIO * 16 * i,
+        RATIO * (280 + 16 * j)
       );
     }
   }
@@ -782,11 +826,21 @@ function makeBGContainer(textures) {
   // net pillar
   texture = textures[TEXTURES.NET_PILLAR_TOP];
   tile = new Sprite(texture);
-  addChildToParentAndSetLocalPosition(bgContainer, tile, 213, 176);
+  addChildToParentAndSetLocalPosition(
+    bgContainer,
+    tile,
+    RATIO * 213,
+    RATIO * 176
+  );
   texture = textures[TEXTURES.NET_PILLAR];
   for (let j = 0; j < 12; j++) {
     tile = new Sprite(texture);
-    addChildToParentAndSetLocalPosition(bgContainer, tile, 213, 184 + 8 * j);
+    addChildToParentAndSetLocalPosition(
+      bgContainer,
+      tile,
+      RATIO * 213,
+      RATIO * (184 + 8 * j)
+    );
   }
 
   return bgContainer;
@@ -880,7 +934,7 @@ function makeScoreBoardSprite(textures) {
   addChildToParentAndSetLocalPosition(
     scoreBoard,
     numberAnimatedSprites[0],
-    32,
+    RATIO * 32,
     0
   ); // for units
   addChildToParentAndSetLocalPosition(
@@ -924,7 +978,7 @@ function makeWaveContainer(textures) {
   const texture = textures[TEXTURES.WAVE];
   for (let i = 0; i < 432 / 16; i++) {
     const tile = new Sprite(texture);
-    addChildToParentAndSetLocalPosition(waveContainer, tile, 16 * i, 0);
+    addChildToParentAndSetLocalPosition(waveContainer, tile, RATIO * 16 * i, 0);
   }
 
   return waveContainer;
