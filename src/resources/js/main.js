@@ -45,6 +45,7 @@ import { ASSETS_PATH } from './assets_path.js';
 import { setUpUI } from './ui.js';
 import { setUpBotTestUI } from './bot/testSetup.js';
 import { setUpOperatorConsole } from './operator/console.js';
+import { setUpTouchLimit } from './rules/touchLimit.js';
 
 // Reference for how to use Renderer.registerPlugin:
 // https://github.com/pixijs/pixijs/blob/af3c0c6bb15aeb1049178c972e4a14bb4cabfce4/bundles/pixi.js/src/index.ts#L27-L34
@@ -149,8 +150,11 @@ function setup() {
   const pikaVolley = new PikachuVolleyball(stage, loader.resources);
   setUpUI(pikaVolley, ticker);
   setUpBotTestUI(pikaVolley, ticker); // Phase 2 test environment, see bot/testSetup.js
-  setUpOperatorConsole(pikaVolley, ticker); // referee overrides, see operator/console.js
+  const operator = setUpOperatorConsole(pikaVolley, ticker); // referee overrides, see operator/console.js
   start(pikaVolley);
+  // After start() on purpose: this observer has to see the frame the game loop
+  // just simulated, and ticker callbacks run in the order they were added.
+  setUpTouchLimit(pikaVolley, ticker, operator); // see rules/touchLimit.js
 }
 
 /**
