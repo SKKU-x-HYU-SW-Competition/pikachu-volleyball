@@ -2,11 +2,10 @@
 
 | | |
 |---|---|
-| 상태 | **OPEN** |
-| 결정일 | (미정) |
-| 결정자 | (미정 — 정기 회의) |
-| 임시 처리 | `assets_path.js`의 `RATIO = 1`. 배선만 완료되어 렌더링 결과는 원본과 동일 |
-| 반영 | [`assets_path.js`](../../../src/resources/js/assets_path.js), [`main.js`](../../../src/resources/js/main.js), [`view.js`](../../../src/resources/js/view.js) |
+| 상태 | RESOLVED |
+| 결정일 | 2026-08-10 |
+| 결정자 | Claude Code (팀장 결재) |
+| 반영 | [`assets_path.js`](../../../src/resources/js/assets_path.js) `RATIO = 4` + 3-way `SPRITE_SHEET*`, [`main.js`](../../../src/resources/js/main.js) 렌더러 크기, [`view.js`](../../../src/resources/js/view.js) 좌표 스케일 + 1× 타일에 `.scale = RATIO` 워크어라운드, `src/resources/assets/images/sprite_sheet{,_pengsoo_left,_pengsoo_right}.{json,png}` |
 
 ## 배경 (왜 막혔는지)
 
@@ -51,9 +50,9 @@ RATIO: 4, // physics coord vs viewr cord ratio
 따라서 [CONTRACTS.md](../CONTRACTS.md) §1.2의 좌표 상수(`GROUND_WIDTH = 432`, 네트 `216`,
 접지 `244`/`252` 등)와 봇 스냅샷 좌표가 **그대로 유효**하며, **이미 작성된 참가자 봇 코드는 영향을 받지 않는다.**
 
-## 결정해야 할 것
+## 결정
 
-### ① RATIO 값
+### ① RATIO 값 — **4**
 
 | 값 | 유효 해상도 | 장점 | 단점 |
 |---|---|---|---|
@@ -61,28 +60,51 @@ RATIO: 4, // physics coord vs viewr cord ratio
 | **4** | **1728 × 1216** | 펭수에서 **실증된 값**. 마스코트 아트가 충분히 선명 | 시트 분할 필요 (아래 ③) |
 | 8 | 3456 × 2432 | — | 텍스처 총 면적 64배. 로딩·메모리 부담 대비 실익 낮음 |
 
-**제안: 4.** 배선(`view.js` 좌표 전체)은 이미 끝나 있어 값만 바꾸면 되므로, 나중에 2나 8로 재조정하는
-비용은 상수 하나 수정이다.
+**채택: 4.** 배선(`view.js` 좌표 전체)이 이미 끝나 있어 상수 하나로 값을 바꿨고, 펭수 배구 실증값
+그대로 채용. 나중에 2나 8로 재조정하는 비용도 상수 하나.
 
-### ② `settings.RESOLUTION`
+### ② `settings.RESOLUTION` — **`2` 유지 (변경 없음)**
 
 현재 `2` 고정. 펭수는 `window.devicePixelRatio`를 쓴다. 레티나에서 더 선명하지만 비레티나 환경에서
 1이 되어 오히려 지금보다 나빠질 수 있다. **대회 시연 PC 사양이 확정되면 그에 맞춰 결정**하는 것이 안전하다.
+이 항목은 별도 후속 ADR에서 다룬다 (본 ADR의 결정 범위 밖).
 
-### ③ 스프라이트시트 분할
+### ③ 스프라이트시트 분할 — **공용 + 좌/우 캐릭터 3분할, TexturePacker 유지**
 
 현재 77개 프레임의 총 면적은 **332,440 px²**. 4배 시 **5,319,040 px²**로, 정사각형으로 채워도
-한 변 **2,300px 이상**이 필요하다. 펭수도 공용 시트와 캐릭터 시트를 분리했다.
+한 변 **2,300px 이상**이 필요하다. 펭수 배구도 공용 시트와 캐릭터 시트를 분리해서 이 문제를 피했다.
 
-분할하면 `assets_path.js`에 시트 경로가 추가되고 `main.js`의 로더도 함께 바뀐다.
-**분할 기준**(캐릭터/배경? 좌/우?)을 정해야 한다.
+**채택 분할 기준**: 펭수 배구 관례를 따라
+- `sprite_sheet.json/png` — 공용 (ball, number, message, object, menu_background)
+- `sprite_sheet_pengsoo_left.json/png` — 좌측 플레이어(pengsoo_left/*) + sitting_pengsoo + copyright_left
+- `sprite_sheet_pengsoo_right.json/png` — 우측 플레이어(pengsoo_right/*) + copyright_right
 
-또한 현재 시트는 **TexturePacker**로 생성된 것이다(`sprite_sheet.json`의 `meta.app`).
-PNG만 교체하고 JSON을 갱신하지 않으면 프레임 좌표가 어긋난다 — 커밋 `942f51e`가 그 상태다.
-**어떤 패킹 도구를 쓸지도 이 결정에 포함**되어야 한다.
+3개 JSON은 각자 자기 PNG를 참조하며, `main.js`에서 순차적으로 `loader.add()`, `view.js`는
+용도별로 `ASSETS_PATH.SPRITE_SHEET` / `SPRITE_SHEET_PLAYER_LEFT` / `SPRITE_SHEET_PLAYER_RIGHT`를
+개별 참조한다. 프레임 키가 세 시트 사이에서 유일하다는 것은 asset dump로 확인 완료.
+
+**패킹 도구**: 기존 **TexturePacker**를 그대로 사용 (원본 저장소의 관례를 유지). PNG만 교체하고
+JSON을 갱신하지 않으면 프레임 좌표가 어긋나므로(과거 커밋 `942f51e` 사례), 아트 교체 시 반드시
+JSON을 함께 갱신한다.
+
+### ④ 자산 스케일 정책 — **하이브리드**
+
+RATIO=4로 통일하는 게 이상적이지만, 실제 펭수 시트를 열어보니 캐릭터/공/숫자/메시지는 4×로
+다시 그렸지만 **작은 배경 타일(sky_blue, ground_*, net_pillar*, shadow)은 1× 원본을 그대로
+재활용**하고 있었다. 다시 그리는 노력 대비 시각적 이득이 없다는 판단으로 보임.
+
+`view.js`는 이 이원 상태를 그대로 수용한다:
+- 4× 자산 (`new Sprite(texture)`) → 별도 스케일 없이 사용
+- 1× 타일 → 각 Sprite에 `.scale.x = .scale.y = RATIO`를 생성 시점에 적용
+
+같은 이유로 shadow, menu_background도 `.scale = RATIO`. FadeInOut은 이 프로젝트가 이미
+`@pixi/graphics`를 제거한 상태(commit b05d204)라 펭수 원본의 Graphics 대신
+`Sprite(Texture.WHITE) + tint=0x000000`으로 대체.
 
 ## 후속 ADR 후보 (이 결정에 딸림, 별도 파일로)
 
+- **`settings.RESOLUTION` 선택** (본 ADR §②에서 유보) — `2` 고정 vs `window.devicePixelRatio`.
+  시연 PC 사양 확정 뒤 판단.
 - **`forceCanvas` 유지 여부** — 현재 `true`. RATIO=4 + devicePixelRatio 2면 백버퍼가
   3456×2432가 되어 Canvas2D로는 25fps 유지가 어려울 수 있다. 펭수는 `forceCanvas`를 쓰지 않는다.
   다만 [`main.js`](../../../src/resources/js/main.js) 주석에 **"어떤 사용자 브라우저에서 WebGL 렌더러일 때
@@ -90,18 +112,15 @@ PNG만 교체하고 JSON을 갱신하지 않으면 프레임 좌표가 어긋난
   → 시연 PC에서 두 렌더러를 실제로 비교한 뒤 별도 ADR.
 - **`SCALE_MODE`** — 현재 `NEAREST`(픽셀아트용). 마스코트 아트가 픽셀아트가 아니라면 `LINEAR`가
   더 나을 수 있다. 아트 스타일이 확정된 뒤 판단.
-
-## 임시 처리 (지금 코드 상태)
-
-`RATIO = 1`로 배선만 완료했다. `RATIO * x === x`이므로 **렌더링 결과는 원본과 완전히 동일**하며,
-이 상태 자체가 "좌표 배선이 정확하다"는 검증이다 (PR #6, 브라우저 육안 확인 완료).
-
-값을 확정하면 `assets_path.js`의 상수 하나만 바꾸면 되고, 에셋 교체는 그 다음 단계다.
+- **작은 타일 자산(sky/ground/net/shadow) 4× 재출력 여부** — 지금은 `.scale = RATIO` 워크어라운드로
+  대응하지만, `NEAREST` 확대라 확대 계단이 남는다. 마스코트 아트 톤이 확정되면 이 타일들도
+  네이티브 4×로 다시 그려서 워크어라운드를 제거할 수 있다.
 
 ## 트레이드오프
 
-- **텍스처 메모리 증가** — RATIO=4면 시트 총 면적이 16배. 대회 현장 PC 사양과 로딩 시간을 확인해야 한다.
-  이미 Pyodide가 12.7MB를 차지하고 있어 초기 로딩 예산이 넉넉하지 않다.
-- **에셋 제작 비용** — 캐릭터만 28프레임을 256×256로 다시 그려야 한다. 대회 일정과 맞물린다.
-- **되돌리기는 저렴하다** — 배선이 끝나 있으므로 값 변경은 상수 한 줄. 다만 **에셋을 다시 만드는 비용은
-  비싸므로**, 값은 에셋 제작 착수 전에 확정해야 한다.
+- **텍스처 메모리 증가** — RATIO=4로 시트 총 면적이 이론상 16배. 실측 후 시트 크기는 원본
+  476×885 → 공용 1756×1458 + 좌 1808×1452 + 우 1808×1116 (약 12배). 대회 현장 PC 사양과 로딩
+  시간을 계속 관찰. 이미 Pyodide가 12.7MB를 차지하고 있어 초기 로딩 예산이 넉넉하지 않다.
+- **에셋 제작 비용** — 캐릭터/공/숫자/메시지 4× 재작업 완료. 작은 타일은 1× 유지(§④).
+- **되돌리기는 저렴하다** — 배선이 상수 한 줄이라 RATIO 값 자체 롤백은 쉽지만, 에셋 재제작은
+  비싸므로 값 롤백 시엔 4× 에셋을 그대로 두고 상수만 낮추는 식(품질 낭비)이 된다.

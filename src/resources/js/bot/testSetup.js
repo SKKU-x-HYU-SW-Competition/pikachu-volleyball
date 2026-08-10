@@ -46,7 +46,7 @@
 import { PikaKeyboard } from '../keyboard.js';
 import { PikaBotInput } from './botInput.js';
 import { NullInput } from './nullInput.js';
-import { CHASE_BOT_SOURCE, CHASE_BOT_SOURCE_PY } from './exampleBots.js';
+import { CHASE_BOT_SOURCE, CHASE_BOT_SOURCE_PY } from '../code/exampleBots.js';
 import { BOT_LANGUAGE } from './botContract.js';
 import { localStorageWrapper } from '../utils/local_storage_wrapper.js';
 

@@ -228,15 +228,15 @@ def decide(snapshot: dict) -> dict:
 | 슬로모션 지속 프레임 수 | 6 | `pikavolley.js:59` `SLOW_MOTION_FRAMES_NUM = 6` (골 직후에만 발동) |
 | 틱 구동 방식 | PixiJS `Ticker`, `ticker.maxFPS = normalFPS` | `main.js:154-161` |
 
-**봇 연산 예산 (결정: D-016, D-001을 SUPERSEDE)**: `tickFrameGroupSize = 5` (5 프레임 = 1 틱 =
-200ms)로 상향. 원래 D-001에서 1로 확정했으나 두 가지 근거로 재논의됨:
+**봇 연산 예산 (결정: D-016, D-001을 SUPERSEDE)**: `tickFrameGroupSize = 3` (3 프레임 = 1 틱 =
+120ms)로 상향. 원래 D-001에서 1로 확정했으나 두 가지 근거로 재논의됨:
 (i) 다국어 봇 지원(D-012)으로 Pyodide 호출 오버헤드가 매 틱 더해짐,
 (ii) 매 프레임 결정 시 양쪽 봇 모두 즉각 반응해서 승부가 잘 갈리지 않는 밸런스 문제(팀장 관찰).
-200ms 예산이면 Pyodide + 간단한 numpy 연산에 여유가 있고, 5프레임 단위 결정이면 봇 반응 사이에
+120ms 예산이면 Pyodide + 간단한 numpy 연산에 여유가 있고, 3프레임 단위 결정이면 봇 반응 사이에
 사람이 감지 가능한 지연이 생겨 전략 변별력이 살아납니다. 자세한 근거·트레이드오프는
 [ADR-0016](decisions/ADR-0016-tick-frame-group-size-raised.md) 참고. 값은 여전히 상수
 ([`bot/botContract.js`](../../src/resources/js/bot/botContract.js)의 `TICK_FRAME_GROUP_SIZE`)로 빼둬서
-실측 후 3/5/7 등으로 재조정하기 쉽게 유지합니다.
+실측 후 5/7 등으로 재조정하기 쉽게 유지합니다.
 
 `gameLoop()`은 `deltaTime` 보정 없이 "호출 1번 = 프레임 1개 전진"하는 구조라([`main.js:156-158`](../../src/resources/js/main.js#L156-L158))
 연산이 40ms를 넘겨도 게임이 깨지거나 desync되지 않고 체감 fps만 잠깐 떨어집니다 — 진짜 위험
@@ -244,7 +244,7 @@ def decide(snapshot: dict) -> dict:
 대응합니다.
 
 파생 상수 `BOT_RESPONSE_TIMEOUT_MS` = `MS_PER_FRAME * TICK_FRAME_GROUP_SIZE * 3`이라 자동으로
-40ms×5×3 = **600ms**까지 늘어남 — Pyodide 첫 콜의 워밍업까지 흡수 가능. 시간초과/잘못된 반환값
+40ms×3×3 = **360ms**까지 늘어남 — Pyodide 첫 콜의 워밍업까지 흡수 가능. 시간초과/잘못된 반환값
 처리는 §1.1에서 무입력으로 확정했습니다 (D-002).
 
 ## 3. 변경 이력
@@ -255,4 +255,4 @@ def decide(snapshot: dict) -> dict:
 | v0.2 | 2026-07-07 | (agent-settings 초기 세팅) | 용어를 "에이전트"→"bot"으로 통일. 출력을 4-bit(`left/right/jump/spike`)에서 엔진과 1:1 대응하는 3필드(`x/y/hit`)로 변경. 좌표계를 원본 정수 픽셀 그대로 쓰기로 확정(D-007). `expectedLandingPointX` 노출 확정(D-006). 세트제 미도입 확정, `meta.set/max_set` 제거(D-008). `decision_interval_ms`/`max_response_ms`를 `config.tickFrameGroupSize` 하나로 통합 |
 | v0.3 | 2026-07-07 | Claude Code (사용자 승인) | `tickFrameGroupSize = 1` 확정(D-001). 시간초과/잘못된 반환값 처리를 무입력으로 확정(D-002). 실행 모델을 Web Worker 격리(+타임아웃+강제종료 후 재시작)로 확정(D-003), §1.3 신설 |
 | v0.4 | 2026-07-11 | Claude Code (구현 중 발견 — 사용자 확인 요망) | Phase 1 실제 구현(`src/resources/js/bot/`) 진행 중 발견: 메인 스레드가 Worker 응답을 그 틱 안에 동기 대기할 수 없음(브라우저가 `Atomics.wait`를 메인 스레드에서 막음) → fire-and-forget + "최근 응답 사용" 패턴으로 확정, 약 1틱 파이프라인 지연을 구조적 특성으로 문서화(D-009). §1.0/§1.3에 반영, 구현 파일 링크 추가 |
-| v0.5 | 2026-08-05 | Claude Code (팀장 결재) | 다국어 봇 지원(Python 우선) 확정 — 브라우저 내 WASM 방식(Pyodide, D-012)으로 §1.3에 언어별 러너 개념 추가, §1.4 신설(Python `decide` 시그니처 D-013, Pyodide 지연 로드 D-015, 실패 처리 D-017, 라이브러리 범위 D-018). `TICK_FRAME_GROUP_SIZE`를 1→5로 상향(D-016, D-001 SUPERSEDE) — Pyodide 오버헤드 흡수 + 밸런스 개선. Pyodide 배포는 정적 복사(D-014) |
+| v0.5 | 2026-08-05 | Claude Code (팀장 결재) | 다국어 봇 지원(Python 우선) 확정 — 브라우저 내 WASM 방식(Pyodide, D-012)으로 §1.3에 언어별 러너 개념 추가, §1.4 신설(Python `decide` 시그니처 D-013, Pyodide 지연 로드 D-015, 실패 처리 D-017, 라이브러리 범위 D-018). `TICK_FRAME_GROUP_SIZE`를 1→3으로 상향(D-016, D-001 SUPERSEDE) — Pyodide 오버헤드 흡수 + 밸런스 개선. Pyodide 배포는 정적 복사(D-014) |
