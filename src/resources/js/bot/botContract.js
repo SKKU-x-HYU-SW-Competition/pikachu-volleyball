@@ -93,6 +93,30 @@ export function isValidBotAction(action) {
 }
 
 /**
+ * Read the optional skill field of an action (decision D-022, CONTRACTS.md
+ * §1.1). Returns the x to centre the claw on, or null for "no cast".
+ *
+ * A malformed skillX only cancels the cast -- the movement fields around it
+ * still apply -- because it is an extra field bolted onto the original
+ * three, not part of them. Out-of-court values are clamped rather than
+ * rejected so a bot's aim can never be silently dropped for being one pixel
+ * off the wall.
+ *
+ * @param {*} action
+ * @return {number|null} clamped x in [0, GROUND_WIDTH], or null
+ */
+export function readBotSkillX(action) {
+  if (!action) {
+    return null;
+  }
+  const skillX = action.skillX;
+  if (typeof skillX !== 'number' || !Number.isFinite(skillX)) {
+    return null;
+  }
+  return Math.max(0, Math.min(GROUND_WIDTH, skillX));
+}
+
+/**
  * Build the per-tick game state snapshot handed to a bot (engine -> bot).
  * Pure function: only reads from the given physics/meta objects, never
  * mutates them. See docs/agent-dev/CONTRACTS.md §1.2 for field-by-field

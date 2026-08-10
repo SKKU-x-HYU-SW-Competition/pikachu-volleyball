@@ -107,6 +107,17 @@ UX가 최우선.
 - **B. 스킬 효과 + 발동** — 스킬 종류와 각 소모량, 사람 플레이어의 발동 키, 봇 프로토콜 확장
   (스냅샷에 `gauge` 노출 + 발동 필드). 여기서부터 `physics.js` 수정(Tier B)이 필요할 수 있고,
   [CONTRACTS.md](CONTRACTS.md) 버전업 + 기존 참가자 봇과의 하위 호환 검토가 함께 필요하다.
+  - **B-1 「claw」 1차 구현 완료** (Issue #10, [ADR-0021](decisions/ADR-0021-claw-skill.md),
+    [ADR-0022](decisions/ADR-0022-bot-skill-action-field.md)): 게이지 50 소모 →
+    x범위 예고 1초 → 발톱 생성 → 범위 안 상대 1초 기절(공중이면 즉시 착지). 엔진의 누움
+    상태(`state === 4`)를 밖에서 세팅하는 방식이라 **여기서도 `physics.js` 무수정(Tier A)** 이었다.
+    판정은 지정한 x범위 안의 **모든 y**라 점프로는 못 피하고 좌우 이동만이 회피 수단이다.
+    **봇은 액션 필드 `skillX`로 x를 직접 지정**하고([ADR-0022](decisions/ADR-0022-bot-skill-action-field.md),
+    CONTRACTS.md v0.6), 키보드 발동은 좌표 입력 수단이 없어 상대 위치 중심을 쓴다. 기본 탑재 AI는
+    스킬을 쓰지 못한다.
+  - **B-2 스냅샷 확장 (미착수)**: 스냅샷에 자기/상대 `gauge`와 예고 중인 발톱 범위 노출.
+    **이게 없으면 봇은 발동만 가능하고 회피가 구조적으로 불가능**하므로, 그때까지 봇 대전 밸런스
+    판단은 보류한다. CONTRACTS.md 추가 버전업 대상.
 - **C. 에셋 교체** — 배경/현수막 등 이미지. A/B와 독립적이라 언제든 가능. RATIO 배선과 펭수배구
   스프라이트 교체가 여기에 해당하며 이미 `develop`에 머지됐다
   ([ADR-0019](decisions/ADR-0019-asset-resolution-ratio.md)).
@@ -114,7 +125,7 @@ UX가 최우선.
 **작업 브랜치**: A 이후의 스킬 작업(B)은 `develop`이 아니라 **`develop-skill`**에서 진행한다
 (팀장 결정, [AGENTS.md](../../AGENTS.md) §5). 게이지(A)도 `develop-skill`에 들어가 있다.
 
-**상태**: **A 구현 완료 (RATIO/새 스프라이트에 맞춰 재검증), B 미착수, C 일부 완료**. A는 엔진 파일
+**상태**: **A 구현 완료, B-1(claw) 구현 완료·B-2(봇 프로토콜) 미착수, C 일부 완료**. A는 엔진 파일
 무수정으로 구현됐다 (`player.isCollisionWithBallHappened`를 엔진 밖에서 매 틱 관찰 —
 [05-skill-extension-guide.md](../architecture/05-skill-extension-guide.md) 분류상 Tier A).
 B의 미결 사항은 ADR-0020에 OPEN으로 등재되어 있으며 **정기 회의 안건**이다.

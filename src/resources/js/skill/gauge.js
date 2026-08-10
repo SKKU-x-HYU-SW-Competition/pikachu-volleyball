@@ -90,6 +90,22 @@ export class GaugeTracker {
   }
 
   /**
+   * Pay for a skill. All-or-nothing: a player who cannot afford the cost
+   * spends nothing, so callers can use the return value as the "can I cast?"
+   * check without asking twice.
+   * @param {number} playerIndex 0 or 1
+   * @param {number} amount gauge to spend, e.g. CLAW_COST
+   * @return {boolean} whether the gauge was actually spent
+   */
+  trySpend(playerIndex, amount) {
+    if (this.gauges[playerIndex] < amount) {
+      return false;
+    }
+    this.gauges[playerIndex] = clamp(this.gauges[playerIndex] - amount);
+    return true;
+  }
+
+  /**
    * Apply one ball contact by the given player.
    * @param {number} playerIndex 0 or 1
    */
