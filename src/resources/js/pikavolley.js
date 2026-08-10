@@ -62,8 +62,8 @@ export class PikachuVolleyball {
     /** @type {number} number of elapsed normal fps frames for rendering slow motion */
     this.slowMotionNumOfSkippedFrames = 0;
 
-    /** @type {number} 0: with computer, 1: with friend */
-    this.selectedWithWho = 0;
+    /** @type {number} 1: with friend (solo/computer option removed) */
+    this.selectedWithWho = 1;
 
     /** @type {number[]} [0] for player 1 score, [1] for player 2 score */
     this.scores = [0, 0];
@@ -169,14 +169,14 @@ export class PikachuVolleyball {
   }
 
   /**
-   * Menu: select who do you want to play. With computer? With friend?
+   * Menu: confirm two-player mode ("with friend" only; solo/computer removed)
    * @type {GameState}
    */
   menu() {
     if (this.frameCounter === 0) {
       this.view.menu.visible = true;
       this.view.fadeInOut.setBlackAlphaTo(0);
-      this.selectedWithWho = 0;
+      this.selectedWithWho = 1;
       this.view.menu.selectWithWho(this.selectedWithWho);
     }
     this.view.menu.drawFightMessage(this.frameCounter);
@@ -201,53 +201,12 @@ export class PikachuVolleyball {
     }
 
     if (
-      (this.keyboardArray[0].yDirection === -1 ||
-        this.keyboardArray[1].yDirection === -1) &&
-      this.selectedWithWho === 1
-    ) {
-      this.noInputFrameCounter = 0;
-      this.selectedWithWho = 0;
-      this.view.menu.selectWithWho(this.selectedWithWho);
-      this.audio.sounds.pi.play();
-    } else if (
-      (this.keyboardArray[0].yDirection === 1 ||
-        this.keyboardArray[1].yDirection === 1) &&
-      this.selectedWithWho === 0
-    ) {
-      this.noInputFrameCounter = 0;
-      this.selectedWithWho = 1;
-      this.view.menu.selectWithWho(this.selectedWithWho);
-      this.audio.sounds.pi.play();
-    } else {
-      this.noInputFrameCounter++;
-    }
-
-    if (
       this.keyboardArray[0].powerHit === 1 ||
       this.keyboardArray[1].powerHit === 1
     ) {
-      if (this.selectedWithWho === 1) {
-        this.physics.player1.isComputer = false;
-        this.physics.player2.isComputer = false;
-      } else {
-        if (this.keyboardArray[0].powerHit === 1) {
-          this.physics.player1.isComputer = false;
-          this.physics.player2.isComputer = true;
-        } else if (this.keyboardArray[1].powerHit === 1) {
-          this.physics.player1.isComputer = true;
-          this.physics.player2.isComputer = false;
-        }
-      }
+      this.physics.player1.isComputer = false;
+      this.physics.player2.isComputer = false;
       this.audio.sounds.pikachu.play();
-      this.frameCounter = 0;
-      this.noInputFrameCounter = 0;
-      this.state = this.afterMenuSelection;
-      return;
-    }
-
-    if (this.noInputFrameCounter >= this.noInputFrameTotal.menu) {
-      this.physics.player1.isComputer = true;
-      this.physics.player2.isComputer = true;
       this.frameCounter = 0;
       this.noInputFrameCounter = 0;
       this.state = this.afterMenuSelection;

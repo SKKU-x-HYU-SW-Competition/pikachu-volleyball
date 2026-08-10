@@ -43,7 +43,10 @@ module.exports = {
         // keep dist/ lean; everything Pyodide's runtime actually loads (mjs,
         // wasm, stdlib zip, package repo) is included.
         {
-          from: path.resolve(__dirname, 'node_modules/pyodide') + '/*',
+          // Use context + from '*' instead of '.../pyodide/*' — the trailing /*
+          // glob fails on Windows with copy-webpack-plugin v14.
+          context: path.resolve(__dirname, 'node_modules/pyodide'),
+          from: '*',
           to: 'pyodide/[name][ext]',
           globOptions: {
             // Skip TypeScript defs, source maps, HTML consoles, README, and
