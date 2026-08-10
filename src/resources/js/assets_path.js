@@ -5,6 +5,7 @@
 
 export const ASSETS_PATH = {
   SPRITE_SHEET: '../resources/assets/images/sprite_sheet.json',
+  RATIO: 1,
   TEXTURES: {},
   SOUNDS: {},
 };

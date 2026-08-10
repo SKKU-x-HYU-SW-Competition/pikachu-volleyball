@@ -63,8 +63,8 @@ settings.SCALE_MODE = SCALE_MODES.NEAREST;
 settings.ROUND_PIXELS = true;
 
 const renderer = autoDetectRenderer({
-  width: 432,
-  height: 304,
+  width: 432 * ASSETS_PATH.RATIO,
+  height: 304 * ASSETS_PATH.RATIO,
   antialias: false,
   backgroundColor: 0x000000,
   backgroundAlpha: 1,
