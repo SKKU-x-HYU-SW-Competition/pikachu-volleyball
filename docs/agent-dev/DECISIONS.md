@@ -49,5 +49,9 @@
 | [ADR-0017](decisions/ADR-0017-python-execution-failure.md) | Python 봇 실행 실패 처리 (D-002 확장) | RESOLVED |
 | [ADR-0018](decisions/ADR-0018-python-library-scope.md) | Python 봇 사용 가능 라이브러리 범위 (표준 + numpy) | RESOLVED |
 | [ADR-0019](decisions/ADR-0019-asset-resolution-ratio.md) | 에셋 해상도 스케일링 배율 (RATIO) | RESOLVED |
+| [ADR-0020](decisions/ADR-0020-gauge-system.md) | 게이지 시스템 (스킬 발동 자원) | PARTIAL (충전 규칙만 확정) |
 
-*(새로 발견되는 미확정 사항은 위 절차대로 새 ADR 파일을 만들고 여기 추가하세요.)*
+*(ADR-0020은 충전 규칙만 확정이고 스킬 효과·소모량·봇 프로토콜 확장·사람 발동키는 아직 OPEN입니다 —
+회의 안건. 원래 `feature/5-gauge-system`에서 ADR-0019로 등재됐다가, 같은 번호를 RATIO 결정이 먼저
+`develop`에 머지하며 점유해서 절차대로 0020으로 옮긴 것입니다.
+새로 발견되는 미확정 사항은 위 절차대로 새 ADR 파일을 만들고 여기 추가하세요.)*
