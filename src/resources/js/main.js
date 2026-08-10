@@ -85,6 +85,8 @@ document.getElementById('game-canvas-container').appendChild(renderer.view);
 renderer.render(stage); // To make the initial canvas painting stable in the Firefox browser.
 
 loader.add(ASSETS_PATH.SPRITE_SHEET);
+loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_LEFT);
+loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_RIGHT);
 for (const prop in ASSETS_PATH.SOUNDS) {
   loader.add(ASSETS_PATH.SOUNDS[prop]);
 }

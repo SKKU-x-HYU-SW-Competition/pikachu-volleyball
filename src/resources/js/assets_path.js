@@ -5,16 +5,22 @@
 
 export const ASSETS_PATH = {
   SPRITE_SHEET: '../resources/assets/images/sprite_sheet.json',
-  RATIO: 1,
+  SPRITE_SHEET_PLAYER_LEFT:
+    '../resources/assets/images/sprite_sheet_pengsoo_left.json',
+  SPRITE_SHEET_PLAYER_RIGHT:
+    '../resources/assets/images/sprite_sheet_pengsoo_right.json',
+  RATIO: 4, // physics coord vs viewr cord ratio
   TEXTURES: {},
   SOUNDS: {},
 };
 
 const TEXTURES = ASSETS_PATH.TEXTURES;
-TEXTURES.PIKACHU = (i, j) => `pikachu/pikachu_${i}_${j}.png`;
+TEXTURES.PIKACHU1 = (i, j) => `pengsoo_left/pengsoo_${i}_${j}.png`;
+TEXTURES.PIKACHU2 = (i, j) => `pengsoo_right/pengsoo_${i}_${j}.png`;
 TEXTURES.BALL = (s) => `ball/ball_${s}.png`;
 TEXTURES.NUMBER = (n) => `number/number_${n}.png`;
 
+TEXTURES.MENU_BACKGROUND = 'menu_background.png';
 TEXTURES.SKY_BLUE = 'objects/sky_blue.png';
 TEXTURES.MOUNTAIN = 'objects/mountain.png';
 TEXTURES.GROUND_RED = 'objects/ground_red.png';
@@ -30,21 +36,19 @@ TEXTURES.BALL_TRAIL = 'ball/ball_trail.png';
 TEXTURES.BALL_PUNCH = 'ball/ball_punch.png';
 TEXTURES.CLOUD = 'objects/cloud.png';
 TEXTURES.WAVE = 'objects/wave.png';
-TEXTURES.BLACK = 'objects/black.png';
 
-TEXTURES.SACHISOFT = 'messages/common/sachisoft.png';
 TEXTURES.READY = 'messages/common/ready.png';
 TEXTURES.GAME_END = 'messages/common/game_end.png';
 
-TEXTURES.MARK = 'messages/ja/mark.png';
-TEXTURES.POKEMON = 'messages/ja/pokemon.png';
-TEXTURES.PIKACHU_VOLLEYBALL = 'messages/ja/pikachu_volleyball.png';
-TEXTURES.FIGHT = 'messages/ja/fight.png';
-TEXTURES.WITH_COMPUTER = 'messages/ja/with_computer.png';
-TEXTURES.WITH_FRIEND = 'messages/ja/with_friend.png';
-TEXTURES.GAME_START = 'messages/ja/game_start.png';
+TEXTURES.MARK = 'messages/ko/mark.png';
+TEXTURES.POKEMON = 'messages/ko/pokemon.png';
+TEXTURES.PIKACHU_VOLLEYBALL = 'messages/ko/pikachu_volleyball.png';
+TEXTURES.FIGHT = 'messages/ko/fight.png';
+TEXTURES.WITH_COMPUTER = 'messages/ko/with_computer.png';
+TEXTURES.WITH_FRIEND = 'messages/ko/with_friend.png';
+TEXTURES.GAME_START = 'messages/ko/game_start.png';
 
-TEXTURES.SITTING_PIKACHU = 'sitting_pikachu.png';
+TEXTURES.SITTING_PIKACHU = 'sitting_pengsoo.png';
 
 const SOUNDS = ASSETS_PATH.SOUNDS;
 SOUNDS.BGM = '../resources/assets/sounds/bgm.mp3';
