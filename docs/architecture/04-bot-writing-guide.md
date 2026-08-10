@@ -357,6 +357,26 @@ if (incoming && incoming.framesUntilStrike > 0) {
 파일: [`docs/agent-dev/example-bots/power_hit_bot.js`](../agent-dev/example-bots/power_hit_bot.js).
 6.1의 추격형과 거의 같은 전략을 더 간결하게 정리한 버전 — 참고용으로 나란히 두고 비교해봐도 좋다.
 
+### 6.5 계약 검사형 — 스냅샷 API가 실제로 잘 오는지 확인용
+
+파일: [`docs/agent-dev/example-bots/skill_contract_check_bot.js`](../agent-dev/example-bots/skill_contract_check_bot.js).
+
+전략용이 아니라 **검증용 봇**이다. 매 틱 §4.1/§4.4의 모든 필드가 실제로 오는지, 타입과 범위가
+문서와 맞는지 검사하고, 어긋나면 `[CONTRACT FAIL] ...`을 콘솔에 (같은 메시지는 한 번만) 찍는다.
+틱 사이 변화까지 본다 — 예고 카운트다운이 실제로 줄어드는지, 예고 도중 `centerX`가 안 움직이는지,
+범위 안에서 발톱이 터졌을 때 정말 `state===4`가 되는지, 게이지가 문서에 없는 폭으로 뛰지 않는지.
+
+검사하면서 실제로 플레이도 한다(회피 + 발동). 약 3초마다 아래 같은 요약 줄을 찍으므로,
+**`ERRORS=0`이 유지되는지만 보면 된다**:
+
+```
+[LEFT check] tick=75 | ERRORS=0 | gauge=50(seen 0~100) opp=30 | castsRequested=2
+  ownClawTicks=18 incomingClawTicks=12 | strikesAtMe=3 (stunned 1 / dodged 2)
+  stunTicks=9 | cfg cost=50 width=96 warn=25 stun=25
+```
+
+양쪽에 각각 붙여 봇 vs 봇으로 돌리면 발동·회피 경로가 전부 지나간다.
+
 ## 7. 자주 막히는 지점
 
 - **"에러: undefined"만 뜨고 원인을 모르겠다** → 대개 `decide`라는 이름의 최상위 함수가 없는
