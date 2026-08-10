@@ -44,7 +44,7 @@ import { PikachuVolleyball } from './pikavolley.js';
 import { ASSETS_PATH } from './assets_path.js';
 import { setUpUI } from './ui.js';
 import { setUpBotTestUI } from './bot/testSetup.js';
-import { setUpGauge } from './skill/setup.js';
+import { setUpGauge, setUpClaw } from './skill/setup.js';
 
 // Reference for how to use Renderer.registerPlugin:
 // https://github.com/pixijs/pixijs/blob/af3c0c6bb15aeb1049178c972e4a14bb4cabfce4/bundles/pixi.js/src/index.ts#L27-L34
@@ -88,6 +88,8 @@ renderer.render(stage); // To make the initial canvas painting stable in the Fir
 loader.add(ASSETS_PATH.SPRITE_SHEET);
 loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_LEFT);
 loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_RIGHT);
+loader.add(ASSETS_PATH.SKILL_CLAW_WARNING);
+loader.add(ASSETS_PATH.SKILL_CLAW);
 for (const prop in ASSETS_PATH.SOUNDS) {
   loader.add(ASSETS_PATH.SOUNDS[prop]);
 }
@@ -152,7 +154,8 @@ function setup() {
   start(pikaVolley);
   // After start() so that its tick callback observes the frame gameLoop() just
   // simulated rather than the previous one. See skill/setup.js.
-  setUpGauge(pikaVolley, ticker); // Phase 4 gauge, see skill/setup.js
+  const gaugeTracker = setUpGauge(pikaVolley, ticker); // Phase 4 gauge, see skill/setup.js
+  setUpClaw(pikaVolley, ticker, loader.resources, gaugeTracker); // Phase 4-B claw skill
 }
 
 /**

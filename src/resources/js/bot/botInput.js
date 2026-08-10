@@ -14,6 +14,7 @@ import { PikaUserInput } from '../physics.js';
 import {
   buildGameStateSnapshot,
   isValidBotAction,
+  readBotSkillX,
   isValidBotLanguage,
   BOT_LANGUAGE,
   NEUTRAL_ACTION,
@@ -60,6 +61,19 @@ export class PikaBotInput extends PikaUserInput {
 
     /** @type {{x: number, y: number, hit: number}} last action resolved from the bot's Worker */
     this.latestAction = Object.assign({}, NEUTRAL_ACTION);
+
+    /**
+     * Skill cast requested by the most recent bot response, waiting to be
+     * picked up by the skill layer (CONTRACTS.md 1.1 `skillX`).
+     *
+     * Kept apart from latestAction because it has different lifetime: the
+     * movement fields are re-applied on every frame of the tick group, while a
+     * cast must fire at most once per bot response -- otherwise a bot that
+     * keeps returning the same skillX would pay the gauge again every frame.
+     * skill/setup.js drains this with consumeSkillX().
+     * @type {number|null}
+     */
+    this.pendingSkillX = null;
 
     /** @type {number|null} requestId currently awaiting a Worker response, if any */
     this.pendingRequestId = null;
@@ -135,6 +149,13 @@ export class PikaBotInput extends PikaUserInput {
 
     if (message.action !== null && isValidBotAction(message.action)) {
       this.latestAction = message.action;
+      // null here means "this response asked for no cast", which correctly
+      // leaves an earlier un-drained request alone only because a drained
+      // request is already null. See consumeSkillX.
+      const skillX = readBotSkillX(message.action);
+      if (skillX !== null) {
+        this.pendingSkillX = skillX;
+      }
       this.consecutiveTimeouts = 0;
     } else {
       // Malformed action or a thrown error inside decide() -> neutral (D-002).
@@ -172,6 +193,17 @@ export class PikaBotInput extends PikaUserInput {
    * kicks off the request for the *next* tick's action. See
    * docs/agent-dev/CONTRACTS.md D-009 for the full reasoning.
    */
+  /**
+   * Take the skill cast requested by the latest bot response, if any, and
+   * clear it so the same response cannot cast twice (CONTRACTS.md 1.1).
+   * @return {number|null} x to centre the claw on, already clamped to the court
+   */
+  consumeSkillX() {
+    const skillX = this.pendingSkillX;
+    this.pendingSkillX = null;
+    return skillX;
+  }
+
   getInput() {
     this.xDirection = this.latestAction.x;
     this.yDirection = this.latestAction.y;
