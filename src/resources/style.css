@@ -325,6 +325,58 @@ span.check {
   gap: 12px;
   margin-top: 6px;
 }
+.fade-in-box.operator {
+  justify-content: flex-start;
+  height: auto;
+  max-height: calc(var(--canvas-height) - 20px);
+  overflow-y: auto;
+  text-align: left;
+}
+.operator-score {
+  margin: 4px 0;
+  font-size: 1.6em;
+  font-weight: bold;
+  text-align: center;
+}
+.operator-columns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+.operator-side {
+  display: flex;
+  flex-direction: column;
+  width: 45%;
+  min-width: 140px;
+}
+.operator-score-group {
+  display: flex;
+  margin-bottom: 6px;
+}
+.operator-score-group > .btn {
+  flex: 1;
+  width: auto;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+.operator-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+/* btn-in-box is a fixed 5-character box, which clips these longer labels
+   ("다음 랠리로", "점수 초기화") onto a second line. Let them size to their
+   text instead. */
+.operator-actions > .btn-in-box {
+  width: auto;
+  min-width: calc(5 * var(--font-size));
+  padding: 0 calc(0.5 * var(--font-size));
+  white-space: nowrap;
+}
 @keyframes fade-in {
   0% {
     opacity: 0;

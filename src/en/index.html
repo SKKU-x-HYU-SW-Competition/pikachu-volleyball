@@ -193,6 +193,9 @@
           <button type="button" id="bot-setup-btn" class="btn" disabled>
             Bot Setup
           </button>
+          <button type="button" id="operator-btn" class="btn" disabled>
+            Operator
+          </button>
           <div class="color-scheme-toggle-switch-container">
             <input
               type="checkbox"
@@ -459,6 +462,51 @@
               Apply (restart)
             </button>
             <button type="button" id="bot-setup-close-btn" class="btn-in-box">
+              Close
+            </button>
+          </div>
+        </div>
+        <div class="fade-in-box operator hidden" id="operator-box">
+          <h1>Operator Console</h1>
+          <p class="small">
+            For foul calls, restoring the score of an interrupted match, and
+            forcing a stalled rally onward. The score buttons only change the
+            score and leave the rally running, so rebuild the score first and
+            then press "Next rally" if you need to.
+          </p>
+          <p class="operator-score" id="operator-status">0 : 0</p>
+          <div class="operator-columns">
+            <div class="operator-side">
+              <p class="thick">Left (Player 1)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-left-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-left-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+            <div class="operator-side">
+              <p class="thick">Right (Player 2)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-right-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-right-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="operator-actions">
+            <button type="button" id="operator-next-round-btn" class="btn-in-box">
+              Next rally
+            </button>
+            <button type="button" id="operator-reset-btn" class="btn-in-box">
+              Reset score
+            </button>
+            <button type="button" id="operator-close-btn" class="btn-in-box">
               Close
             </button>
           </div>

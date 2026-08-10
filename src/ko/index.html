@@ -193,6 +193,9 @@
           <button type="button" id="bot-setup-btn" class="btn" disabled>
             봇 설정
           </button>
+          <button type="button" id="operator-btn" class="btn" disabled>
+            운영자
+          </button>
           <div class="color-scheme-toggle-switch-container">
             <input
               type="checkbox"
@@ -458,6 +461,51 @@
               적용 (재시작)
             </button>
             <button type="button" id="bot-setup-close-btn" class="btn-in-box">
+              닫기
+            </button>
+          </div>
+        </div>
+        <div class="fade-in-box operator hidden" id="operator-box">
+          <h1>운영자 콘솔</h1>
+          <p class="small">
+            반칙 판정, 중단된 경기의 점수 복구, 멈춘 랠리 강제 진행에
+            사용합니다. 점수 버튼은 점수만 바꾸고 진행 중인 랠리는 건드리지
+            않으므로, 점수를 여러 번 눌러 복구한 뒤 필요하면 "다음 랠리로"를
+            누르세요.
+          </p>
+          <p class="operator-score" id="operator-status">0 : 0</p>
+          <div class="operator-columns">
+            <div class="operator-side">
+              <p class="thick">왼쪽 (Player 1)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-left-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-left-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+            <div class="operator-side">
+              <p class="thick">오른쪽 (Player 2)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-right-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-right-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="operator-actions">
+            <button type="button" id="operator-next-round-btn" class="btn-in-box">
+              다음 랠리로
+            </button>
+            <button type="button" id="operator-reset-btn" class="btn-in-box">
+              점수 초기화
+            </button>
+            <button type="button" id="operator-close-btn" class="btn-in-box">
               닫기
             </button>
           </div>

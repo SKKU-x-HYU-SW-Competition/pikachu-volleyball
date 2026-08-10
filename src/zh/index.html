@@ -191,6 +191,9 @@
           <button type="button" id="bot-setup-btn" class="btn" disabled>
             機器人設定
           </button>
+          <button type="button" id="operator-btn" class="btn" disabled>
+            管理員
+          </button>
           <div class="color-scheme-toggle-switch-container">
             <input
               type="checkbox"
@@ -449,6 +452,50 @@
               套用（重新開始）
             </button>
             <button type="button" id="bot-setup-close-btn" class="btn-in-box">
+              關閉
+            </button>
+          </div>
+        </div>
+        <div class="fade-in-box operator hidden" id="operator-box">
+          <h1>管理員主控台</h1>
+          <p class="small">
+            用於犯規判定、還原中斷比賽的比分，以及強制推進卡住的回合。比分按鈕
+            只會改變比分，不會影響進行中的回合；請先還原比分，需要時再按
+            「下一回合」。
+          </p>
+          <p class="operator-score" id="operator-status">0 : 0</p>
+          <div class="operator-columns">
+            <div class="operator-side">
+              <p class="thick">左方 (Player 1)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-left-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-left-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+            <div class="operator-side">
+              <p class="thick">右方 (Player 2)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-right-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-right-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="operator-actions">
+            <button type="button" id="operator-next-round-btn" class="btn-in-box">
+              下一回合
+            </button>
+            <button type="button" id="operator-reset-btn" class="btn-in-box">
+              重設比分
+            </button>
+            <button type="button" id="operator-close-btn" class="btn-in-box">
               關閉
             </button>
           </div>
