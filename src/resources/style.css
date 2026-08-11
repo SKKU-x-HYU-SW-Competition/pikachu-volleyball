@@ -272,6 +272,7 @@ span.check {
   justify-content: flex-start;
   height: auto;
   max-height: calc(var(--canvas-height) - 20px);
+  padding-bottom: 12px;
   overflow-y: auto;
   text-align: left;
 }
@@ -329,6 +330,7 @@ span.check {
   justify-content: flex-start;
   height: auto;
   max-height: calc(var(--canvas-height) - 20px);
+  padding-bottom: 12px;
   overflow-y: auto;
   text-align: left;
 }
@@ -369,9 +371,11 @@ span.check {
   margin-top: 6px;
 }
 /* btn-in-box is a fixed 5-character box, which clips these longer labels
-   ("다음 랠리로", "점수 초기화") onto a second line. Let them size to their
-   text instead. */
-.operator-actions > .btn-in-box {
+   ("다음 랠리로", "점수 초기화", "예제 봇 불러오기", "적용 (재시작)") onto a
+   second line. Let them size to their text instead. */
+.operator-actions > .btn-in-box,
+.bot-setup-side > .btn-in-box,
+.bot-setup-actions > .btn-in-box {
   width: auto;
   min-width: calc(5 * var(--font-size));
   padding: 0 calc(0.5 * var(--font-size));
