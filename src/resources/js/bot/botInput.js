@@ -35,6 +35,10 @@ export class PikaBotInput extends PikaUserInput {
    * @param {'js'|'py'} [args.language] bot source language (D-012, D-013).
    *   Selects which Worker script runs the source. Defaults to 'js' when
    *   omitted so pre-Phase-5 callers keep working unchanged.
+   * @param {function(): ?{gauges: number[], claws: Array, config: Object}} [args.getSkillState]
+   *   reads the skill layer's live state for the snapshot's gauge/claw fields
+   *   (D-023, skill/setup.js). Omitted means "no skill layer wired": those
+   *   fields go out as null and the bot still runs.
    * @param {function({phase: string, ok: (boolean|undefined), error: (string|undefined)}): void} [args.onInitResult]
    *   called when the Worker reports init progress. JS runner emits one
    *   terminal event (`phase: 'ok'` with `ok: true|false`); Python runner
@@ -42,12 +46,21 @@ export class PikaBotInput extends PikaUserInput {
    *   -> `'runningSource'` -> `'ok'` or `'error'`) so UI can surface
    *   Pyodide load progress (D-015, D-017).
    */
-  constructor({ side, physics, getMeta, botSource, language, onInitResult }) {
+  constructor({
+    side,
+    physics,
+    getMeta,
+    botSource,
+    language,
+    onInitResult,
+    getSkillState,
+  }) {
     super();
 
     this.side = side;
     this.physics = physics;
     this.getMeta = getMeta;
+    this.getSkillState = getSkillState || (() => null);
     this.botSource = botSource;
     this.language = isValidBotLanguage(language) ? language : BOT_LANGUAGE.JS;
     this.onInitResult = onInitResult || null;
@@ -234,6 +247,7 @@ export class PikaBotInput extends PikaUserInput {
       physics: this.physics,
       meta: meta,
       rallyFrameCount: this.rallyFrameCount,
+      skill: this.getSkillState(),
     });
 
     const requestId = this.nextRequestId++;

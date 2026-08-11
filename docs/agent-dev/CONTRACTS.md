@@ -1,6 +1,6 @@
 # CONTRACTS.md — 봇 입출력 프로토콜 & 틱 타이밍 (SOR)
 
-> **상태: DRAFT v0.6 — Phase 4-B(스킬) 진행 중** (`src/resources/js/skill/`). 이 문서가 이 프로토콜의 단일 진실 소스입니다.
+> **상태: DRAFT v0.7 — Phase 4-B(스킬) 진행 중** (`src/resources/js/skill/`). 이 문서가 이 프로토콜의 단일 진실 소스입니다.
 > 구현 코드는 이 문서에 정의된 필드/의미론과 항상 일치해야 하며,
 > 반대로 구현하다가 이 문서와 다르게 가야 한다는 게 밝혀지면 **코드부터 바꾸지 말고
 > 먼저 이 문서를 갱신 + 버전을 올리고 [DECISIONS.md](DECISIONS.md)에 사유를 남긴 뒤** 코드를 바꾸세요.
@@ -95,9 +95,8 @@
 - **키보드 플레이어**는 이 필드와 무관하게 발동 키(기본 `KeyC` / `ShiftRight`)를 쓰며, 이 경우
   범위는 **발동 시점 상대 위치를 중심**으로 자동 결정됩니다 (사람이 좌표를 입력할 방법이 없으므로).
 
-> **아직 미반영**: 봇이 자기/상대 **게이지**와 **예고 중인 발톱 범위**를 볼 수 있게 하는 §1.2
-> 스냅샷 확장은 별도 작업으로 분리되어 있습니다. 그 전까지 봇은 발동은 할 수 있지만 게이지가
-> 얼마인지, 자기가 노려지고 있는지 알 수 없습니다.
+- **발동에 필요한 정보**(자기/상대 게이지, 예고 중인 발톱 범위, 소모량·범위 폭 같은 튜닝 상수)는
+  §1.2 스냅샷에 들어 있습니다 (v0.7, D-023).
 
 ### 1.2 게임 상태 스냅샷 (엔진 → 봇)
 
@@ -121,20 +120,32 @@
   "matchId": "string",
   "tick": 12345,
   "side": "LEFT",
-  "self":  { "x": 120, "y": 244, "state": 0, "frameNumber": 3, "divingDirection": 0 },
-  "opp":   { "x": 300, "y": 180, "state": 1, "frameNumber": 5, "divingDirection": 0 },
+  "self":  { "x": 120, "y": 244, "state": 0, "frameNumber": 3, "divingDirection": 0,
+             "lyingDownDurationLeft": -1, "gauge": 70, "claw": null },
+  "opp":   { "x": 300, "y": 180, "state": 1, "frameNumber": 5, "divingDirection": 0,
+             "lyingDownDurationLeft": -1, "gauge": 30,
+             "claw": { "centerX": 120, "framesUntilStrike": 12, "framesLeftActive": 0 } },
   "ball":  { "x": 216, "y": 140, "xVelocity": -3, "yVelocity": 6, "expectedLandingPointX": 340, "isPowerHit": false },
   "meta":  { "score": { "self": 7, "opp": 6 }, "isPlayer2Serve": false, "rallyFrameCount": 42 },
-  "config": { "tickFrameGroupSize": 1 }
+  "config": {
+    "tickFrameGroupSize": 3,
+    "gauge": { "min": 0, "max": 100, "onReceive": 10, "onExtraTouch": -5, "onServe": 0 },
+    "claw":  { "cost": 50, "width": 96, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
+  }
 }
 ```
 
-필드 출처 (전부 물리 엔진에 이미 있는 값 — 새로 지어낸 값 없음):
+필드 출처 (엔진 값 + 엔진 밖 스킬 계층 값. 봇 편의를 위해 새로 계산해 지어낸 값은 없습니다):
 
 - **self / opp** ([`Player`](../../src/resources/js/physics.js#L124) 기준): `x`, `y`,
-  `state`(0정상/1점프/2파워히트/3다이빙/4누움/5승리/6패배), `frameNumber`, `divingDirection`.
+  `state`(0정상/1점프/2파워히트/3다이빙/4누움-기절/5승리/6패배), `frameNumber`, `divingDirection`,
+  `lyingDownDurationLeft`, 그리고 스킬 계층이 채우는 `gauge`/`claw`(아래 §1.2.1).
   둘 다 **완전 대칭 정보**를 줍니다 (상대 정보를 숨기지 않음 — 실제로도 사람이 화면을 보면 다
   보이는 정보이므로 인위적으로 가릴 이유가 없다고 판단).
+  - `lyingDownDurationLeft`: `state === 4`(누움/기절)일 때 남은 시간. 엔진이 매 프레임 1씩 줄이고
+    `-1` 미만이 되면 `state = 0`으로 돌아가므로, **움직일 수 있게 되기까지 `값 + 2` 프레임**입니다
+    ([`physics.js:507-512`](../../src/resources/js/physics.js#L507-L512)). 그 외 상태에서는 엔진이
+    남겨둔 값이 그대로 보이므로 `state === 4`일 때만 의미가 있습니다.
   - `x`/`y` 속도: 자신의 속도는 직전에 자신이 낸 입력으로 알 수 있고(수평 이동은 관성이 없어
     입력에 따라 그 프레임에 즉시 결정됨), 상대 속도가 필요하면 봇이 직전 틱 스냅샷과 비교해
     직접 계산하면 됩니다 (단발성 차분이라 엔진 도움이 굳이 필요 없음 — 아래 `ball.expectedLandingPointX`
@@ -153,7 +164,41 @@
 - **config**: `tickFrameGroupSize` — §2 참고. 별도의 ms 단위 필드(`decision_interval_ms` 등)는
   두지 않습니다. 엔진의 시계는 연속적인 ms가 아니라 이산적인 프레임이므로, "몇 프레임을 한 틱으로
   묶는지"(`tickFrameGroupSize`, D-001)라는 하나의 정수 개념으로 통일합니다. 실제 ms가 필요하면
-  봇이 `tick * 40 * tickFrameGroupSize`로 직접 계산하면 됩니다.
+  봇이 `tick * 40 * tickFrameGroupSize`로 직접 계산하면 됩니다. `gauge`/`claw` 블록은 §1.2.1 참고.
+
+### 1.2.1 스킬 관련 필드 (결정: D-023)
+
+스킬 계층([`src/resources/js/skill/`](../../src/resources/js/skill/))이 채우는 값입니다. 엔진
+필드가 아니지만 봇이 스킬을 쓰거나 피하려면 반드시 필요합니다 (이게 없으면 봇은 발동만 가능하고
+**회피가 구조적으로 불가능**합니다 — D-023 배경).
+
+| 필드 | 값 | 의미 |
+|---|---|---|
+| `self.gauge` / `opp.gauge` | `0 ~ 100` | 현재 게이지 (충전 규칙은 D-020). 상대 것도 그대로 보여줍니다 — 화면 게이지 바에 이미 양쪽 다 그려져 있습니다 |
+| `self.claw` / `opp.claw` | 객체 또는 `null` | **그 플레이어가 시전한** 발톱. 발동 중이 아니면 `null`(Python은 `None`) |
+| `.claw.centerX` | 0 ~ 432 | 발톱 범위의 중심 x |
+| `.claw.framesUntilStrike` | 정수 | 발톱이 터지기까지 남은 프레임. `0`이면 이미 터졌고 연출만 남은 상태 |
+| `.claw.framesLeftActive` | 정수 | 연출이 사라지기까지 남은 프레임. 이게 끝나야 그 플레이어가 재발동할 수 있습니다 |
+| `config.gauge` | `{min, max, onReceive, onExtraTouch, onServe}` | 게이지 범위와 증감폭 (D-020) |
+| `config.claw` | `{cost, width, warningFrames, stunFrames, activeFrames}` | 「claw」 튜닝 상수 (D-021 §3) |
+
+- **`claw`는 시전자 기준**입니다. 발톱의 피해자는 항상 시전자의 상대이므로 **`opp.claw`가 나를
+  노리는 발톱**이고, `self.claw`는 내가 쏜 것(= `null`이 아니면 재발동이 거절됨)입니다.
+- **맞는 조건**은 x축만 봅니다: `|self.x - opp.claw.centerX| <= config.claw.width / 2 + 32`
+  (32 = `PLAYER_HALF_LENGTH`). 점프로는 못 피하고 좌우 이동만이 회피 수단입니다(D-021 §4-2).
+  이 판정을 미리 계산한 불리언은 주지 않습니다 — 회피 판단 자체가 이 스킬의 전략입니다.
+- **`config.claw.stunFrames`는 실제 기절 지속 프레임 수(25)** 입니다. 소스 상수
+  `CLAW_STUN_FRAMES`(23)는 엔진이 N+2 프레임을 쓰는 내부 사정에서 나온 값이라 그대로 노출하지
+  않습니다.
+- **튜닝 상수를 매 틱 실어 보내는 이유**: 이 숫자들은 전부 아직 stub이고 실측 후 조정 1순위라,
+  봇이 하드코딩하면 값이 바뀌는 순간 에러도 없이 조용히 틀린 판단을 하게 됩니다 (D-023 §3).
+- **값의 시점**: 스킬 트래커는 `gameLoop()` 뒤에 관찰하고 스냅샷은 `getInput()`(= `gameLoop()` 안)
+  에서 만들어지므로, 이 값들은 **직전 프레임 종료 시점**의 상태입니다. 나머지 스냅샷 필드와 시점이
+  같으므로 스냅샷 내부에서 어긋나지는 않습니다. 다만 §1.0의 파이프라인 지연(약 1틱)이 더해지므로
+  `framesUntilStrike`의 **마지막 몇 프레임은 믿지 마세요** — 실제 회피 여유는 그보다 최대
+  6프레임 정도 짧습니다.
+- **배선이 없으면 stub**: 스킬 계층이 주입되지 않은 경로에서는 `gauge`/`claw`/`config.gauge`/
+  `config.claw`가 전부 `null`로 나갑니다. 실제 게임에서는 `main.js`가 항상 주입합니다.
 
 ### 1.3 실행 모델: Web Worker 격리 (결정: D-003, D-012)
 
@@ -279,4 +324,5 @@ def decide(snapshot: dict) -> dict:
 | v0.3 | 2026-07-07 | Claude Code (사용자 승인) | `tickFrameGroupSize = 1` 확정(D-001). 시간초과/잘못된 반환값 처리를 무입력으로 확정(D-002). 실행 모델을 Web Worker 격리(+타임아웃+강제종료 후 재시작)로 확정(D-003), §1.3 신설 |
 | v0.4 | 2026-07-11 | Claude Code (구현 중 발견 — 사용자 확인 요망) | Phase 1 실제 구현(`src/resources/js/bot/`) 진행 중 발견: 메인 스레드가 Worker 응답을 그 틱 안에 동기 대기할 수 없음(브라우저가 `Atomics.wait`를 메인 스레드에서 막음) → fire-and-forget + "최근 응답 사용" 패턴으로 확정, 약 1틱 파이프라인 지연을 구조적 특성으로 문서화(D-009). §1.0/§1.3에 반영, 구현 파일 링크 추가 |
 | v0.5 | 2026-08-05 | Claude Code (팀장 결재) | 다국어 봇 지원(Python 우선) 확정 — 브라우저 내 WASM 방식(Pyodide, D-012)으로 §1.3에 언어별 러너 개념 추가, §1.4 신설(Python `decide` 시그니처 D-013, Pyodide 지연 로드 D-015, 실패 처리 D-017, 라이브러리 범위 D-018). `TICK_FRAME_GROUP_SIZE`를 1→3으로 상향(D-016, D-001 SUPERSEDE) — Pyodide 오버헤드 흡수 + 밸런스 개선. Pyodide 배포는 정적 복사(D-014) |
+| v0.7 | 2026-08-11 | Claude Code (팀장 결재) | **스냅샷(§1.2) 스킬 확장** — 플레이어 뷰에 `gauge`·`claw`(시전자 기준, 발동 중이 아니면 `null`)·`lyingDownDurationLeft` 추가, `config`에 `gauge`/`claw` 튜닝 상수 블록 추가, §1.2.1 신설. 이걸로 봇이 처음으로 **발톱 회피와 게이지 관리**를 할 수 있게 됨(D-023). 기존 필드는 제거·개명 없음 → 3필드 봇 무변경 동작 |
 | v0.6 | 2026-08-11 | Claude Code (팀장 결재) | 스킬 발동을 봇 액션에 추가 — 4번째 필드 `skillX`(숫자면 그 x를 중심으로 「claw」 발동, 생략/`null`이면 미발동, 좌표는 코트 전체 0~432에서 클램프, 응답 1건당 최대 1회 소비). 기존 3필드 봇은 무변경으로 계속 동작(D-022). §1.1에 필드와 세부 규칙 추가. **스냅샷(§1.2) 확장(게이지·예고 중인 발톱 노출)은 이번 버전에 포함되지 않음** — 별도 작업 |

@@ -52,6 +52,30 @@ export const CLAW_STUN_FRAMES = 23;
  */
 export const CLAW_ACTIVE_FRAMES = 10;
 
+/**
+ * How many frames a victim actually cannot move for. CLAW_STUN_FRAMES is what
+ * gets written into the engine field; this is what a bot needs to reason with,
+ * hence the separate constant (see CLAW_STUN_FRAMES for the +2).
+ * @constant @type {number}
+ */
+export const CLAW_STUN_TOTAL_FRAMES = CLAW_STUN_FRAMES + 2;
+
+/**
+ * The tuning numbers above, as the bots see them in their snapshot's
+ * `config.claw` (CONTRACTS.md 1.2.1, D-023). They are all still stubs awaiting
+ * real matches, so bots read them per tick instead of hardcoding them -- a
+ * bot that hardcoded `cost === 50` would keep casting into a silent rejection
+ * the day the meeting changes the number.
+ * @constant
+ */
+export const CLAW_SNAPSHOT_CONFIG = Object.freeze({
+  cost: CLAW_COST,
+  width: CLAW_WIDTH,
+  warningFrames: CLAW_WARNING_FRAMES,
+  stunFrames: CLAW_STUN_TOTAL_FRAMES,
+  activeFrames: CLAW_ACTIVE_FRAMES,
+});
+
 /** @constant @type {string} KeyboardEvent.code that casts for player 1 */
 export const CLAW_KEY_P1 = 'KeyC';
 /** @constant @type {string} KeyboardEvent.code that casts for player 2 */

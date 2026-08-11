@@ -42,6 +42,22 @@ export const GAUGE_ON_EXTRA_TOUCH = -5;
 export const GAUGE_ON_SERVE = 0;
 
 /**
+ * The gauge rules as the bots see them in their snapshot's `config.gauge`
+ * (CONTRACTS.md 1.2.1, D-023). Exposed rather than left for bots to hardcode
+ * for the same reason as CLAW_SNAPSHOT_CONFIG: these are tuning stubs, and a
+ * bot planning "one clean return and I can afford a claw" must plan against
+ * the numbers actually in force.
+ * @constant
+ */
+export const GAUGE_SNAPSHOT_CONFIG = Object.freeze({
+  min: GAUGE_MIN,
+  max: GAUGE_MAX,
+  onReceive: GAUGE_ON_RECEIVE,
+  onExtraTouch: GAUGE_ON_EXTRA_TOUCH,
+  onServe: GAUGE_ON_SERVE,
+});
+
+/**
  * Tracks a gauge per player by observing the physics engine from the outside.
  *
  * The engine sets player.isCollisionWithBallHappened to true on contact and

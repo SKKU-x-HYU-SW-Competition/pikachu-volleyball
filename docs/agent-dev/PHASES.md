@@ -115,9 +115,12 @@ UX가 최우선.
     **봇은 액션 필드 `skillX`로 x를 직접 지정**하고([ADR-0022](decisions/ADR-0022-bot-skill-action-field.md),
     CONTRACTS.md v0.6), 키보드 발동은 좌표 입력 수단이 없어 상대 위치 중심을 쓴다. 기본 탑재 AI는
     스킬을 쓰지 못한다.
-  - **B-2 스냅샷 확장 (미착수)**: 스냅샷에 자기/상대 `gauge`와 예고 중인 발톱 범위 노출.
-    **이게 없으면 봇은 발동만 가능하고 회피가 구조적으로 불가능**하므로, 그때까지 봇 대전 밸런스
-    판단은 보류한다. CONTRACTS.md 추가 버전업 대상.
+  - **B-2 스냅샷 확장 완료** (Issue #12, [ADR-0023](decisions/ADR-0023-snapshot-skill-state.md),
+    CONTRACTS.md v0.7): 플레이어 뷰에 `gauge`·`claw`(**시전자 기준** — `opp.claw`가 나를 노리는
+    것)·`lyingDownDurationLeft`를, `config`에 `gauge`/`claw` 튜닝 상수 블록을 추가했다. 이걸로
+    봇이 처음으로 **게이지 관리와 발톱 회피**를 할 수 있게 됐다(브라우저 검증에서 봇 대전 34회
+    피격 판정 중 17회 회피 성공). 배선상 `skill/setup.js`가 `setUpSkills()` 하나로 합쳐지면서
+    트래커 생성은 봇 UI보다 먼저, ticker 관찰은 `start()` 뒤로 분리됐다.
 - **C. 에셋 교체** — 배경/현수막 등 이미지. A/B와 독립적이라 언제든 가능. RATIO 배선과 펭수배구
   스프라이트 교체가 여기에 해당하며 이미 `develop`에 머지됐다
   ([ADR-0019](decisions/ADR-0019-asset-resolution-ratio.md)).
@@ -125,7 +128,7 @@ UX가 최우선.
 **작업 브랜치**: A 이후의 스킬 작업(B)은 `develop`이 아니라 **`develop-skill`**에서 진행한다
 (팀장 결정, [AGENTS.md](../../AGENTS.md) §5). 게이지(A)도 `develop-skill`에 들어가 있다.
 
-**상태**: **A 구현 완료, B-1(claw) 구현 완료·B-2(봇 프로토콜) 미착수, C 일부 완료**. A는 엔진 파일
+**상태**: **A 구현 완료, B-1(claw)·B-2(스냅샷) 구현 완료, C 일부 완료**. A는 엔진 파일
 무수정으로 구현됐다 (`player.isCollisionWithBallHappened`를 엔진 밖에서 매 틱 관찰 —
 [05-skill-extension-guide.md](../architecture/05-skill-extension-guide.md) 분류상 Tier A).
 B의 미결 사항은 ADR-0020에 OPEN으로 등재되어 있으며 **정기 회의 안건**이다.
