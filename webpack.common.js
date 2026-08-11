@@ -43,7 +43,13 @@ module.exports = {
         // keep dist/ lean; everything Pyodide's runtime actually loads (mjs,
         // wasm, stdlib zip, package repo) is included.
         {
-          from: path.resolve(__dirname, 'node_modules/pyodide') + '/*',
+          // The directory goes in `context` and the glob stays a bare '*' on
+          // purpose. Building the pattern as an absolute path + '/*' instead
+          // produces mixed separators on Windows ("C:\...\pyodide/*"), and the
+          // globber reads those backslashes as escape characters, so the
+          // pattern matches nothing and the whole build fails.
+          context: path.resolve(__dirname, 'node_modules/pyodide'),
+          from: '*',
           to: 'pyodide/[name][ext]',
           globOptions: {
             // Skip TypeScript defs, source maps, HTML consoles, README, and

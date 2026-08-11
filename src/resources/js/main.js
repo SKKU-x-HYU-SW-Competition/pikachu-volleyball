@@ -45,6 +45,8 @@ import { ASSETS_PATH } from './assets_path.js';
 import { setUpUI } from './ui.js';
 import { setUpBotTestUI } from './bot/testSetup.js';
 import { setUpSkills } from './skill/setup.js';
+import { setUpOperatorConsole } from './operator/console.js';
+import { setUpTouchLimit } from './rules/touchLimit.js';
 
 // Reference for how to use Renderer.registerPlugin:
 // https://github.com/pixijs/pixijs/blob/af3c0c6bb15aeb1049178c972e4a14bb4cabfce4/bundles/pixi.js/src/index.ts#L27-L34
@@ -157,8 +159,17 @@ function setup() {
   const skills = setUpSkills(pikaVolley, loader.resources);
   // Phase 2 test environment, see bot/testSetup.js
   setUpBotTestUI(pikaVolley, ticker, skills.getSkillState);
+  const operator = setUpOperatorConsole(pikaVolley, ticker); // referee overrides, see operator/console.js
   start(pikaVolley);
+  // Both observers below are wired after start() on purpose: ticker callbacks
+  // run in registration order, so they have to see the frame the game loop
+  // just simulated rather than the previous one.
+  //
+  // Skills observe before the touch limit: the contact that trips the limit is
+  // still made during a live rally, so it charges the gauge before
+  // awardPoint() -> forceNextRound() sets roundEnded and closes the rally.
   skills.startObserving(ticker);
+  setUpTouchLimit(pikaVolley, ticker, operator); // see rules/touchLimit.js
 }
 
 /**

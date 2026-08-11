@@ -167,6 +167,30 @@
               <div class="relative-container">
                 <button
                   type="button"
+                  id="serve-rule-submenu-btn"
+                  class="btn submenu-btn"
+                >
+                  서브권 &#9654;&#xfe0e;
+                </button>
+                <div id="serve-rule-submenu" class="submenu">
+                  <button
+                    type="button"
+                    id="serve-rule-random-btn"
+                    class="btn selected"
+                  >
+                    <span class="check">&check; </span>랜덤 서브
+                  </button>
+                  <button type="button" id="serve-rule-winner-btn" class="btn">
+                    <span class="check">&check; </span>승자 서브
+                  </button>
+                  <button type="button" id="serve-rule-loser-btn" class="btn">
+                    <span class="check">&check; </span>패자 서브
+                  </button>
+                </div>
+              </div>
+              <div class="relative-container">
+                <button
+                  type="button"
                   id="practice-mode-submenu-btn"
                   class="btn submenu-btn"
                 >
@@ -192,6 +216,9 @@
           </div>
           <button type="button" id="bot-setup-btn" class="btn" disabled>
             봇 설정
+          </button>
+          <button type="button" id="operator-btn" class="btn" disabled>
+            운영자
           </button>
           <div class="color-scheme-toggle-switch-container">
             <input
@@ -458,6 +485,63 @@
               적용 (재시작)
             </button>
             <button type="button" id="bot-setup-close-btn" class="btn-in-box">
+              닫기
+            </button>
+          </div>
+        </div>
+        <div class="fade-in-box operator hidden" id="operator-box">
+          <h1>운영자 콘솔</h1>
+          <p class="small">
+            반칙 판정, 중단된 경기의 점수 복구, 멈춘 랠리 강제 진행에
+            사용합니다. 점수 버튼은 점수만 바꾸고 진행 중인 랠리는 건드리지
+            않으므로, 점수를 여러 번 눌러 복구한 뒤 필요하면 "다음 랠리"를
+            누르세요. 다음 랠리를 누를 때는 어느 쪽 서브로 재개할지 직접
+            고릅니다.
+          </p>
+          <p class="operator-score" id="operator-status">0 : 0</p>
+          <div class="operator-columns">
+            <div class="operator-side">
+              <p class="thick">왼쪽 (Player 1)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-left-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-left-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+            <div class="operator-side">
+              <p class="thick">오른쪽 (Player 2)</p>
+              <div class="operator-score-group">
+                <button type="button" id="operator-right-plus-btn" class="btn">
+                  +1
+                </button>
+                <button type="button" id="operator-right-minus-btn" class="btn">
+                  &minus;1
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="operator-actions">
+            <button
+              type="button"
+              id="operator-next-round-left-btn"
+              class="btn-in-box"
+            >
+              다음 랠리 (왼쪽 서브)
+            </button>
+            <button
+              type="button"
+              id="operator-next-round-right-btn"
+              class="btn-in-box"
+            >
+              다음 랠리 (오른쪽 서브)
+            </button>
+            <button type="button" id="operator-reset-btn" class="btn-in-box">
+              점수 초기화
+            </button>
+            <button type="button" id="operator-close-btn" class="btn-in-box">
               닫기
             </button>
           </div>
