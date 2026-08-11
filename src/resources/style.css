@@ -316,6 +316,10 @@ span.check {
   font-size: 0.75em;
   resize: vertical;
 }
+.bot-setup-textarea:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .bot-setup-status {
   min-height: 1.4em;
   font-size: 0.8em;

@@ -171,6 +171,7 @@ export function setUpBotTestUI(pikaVolley, ticker) {
           [side]: Object.assign({}, config[side], { mode: btn.dataset.mode }),
         });
         setSelectedModeBtn(els, side, btn.dataset.mode);
+        setBotFieldsEnabled(els, side, btn.dataset.mode);
       });
     });
     if (els[side].languageGroup) {
@@ -534,6 +535,29 @@ function populateUI(els, config) {
   setSelectedModeBtn(els, 'right', config.right.mode);
   setSelectedLanguageBtn(els, 'left', config.left.language);
   setSelectedLanguageBtn(els, 'right', config.right.language);
+  setBotFieldsEnabled(els, 'left', config.left.mode);
+  setBotFieldsEnabled(els, 'right', config.right.mode);
+}
+
+/**
+ * Enable the language buttons, source textarea, and example button only for
+ * "bot" mode; disable them for "keyboard"/"ai" so it's visually obvious those
+ * fields are irrelevant. `button:disabled` in style.css already grays out the
+ * buttons; textarea gets its subtle fade from .bot-setup-textarea:disabled.
+ * @param {ReturnType<typeof collectElements>} els
+ * @param {'left'|'right'} side
+ * @param {SideMode} mode
+ */
+function setBotFieldsEnabled(els, side, mode) {
+  const enabled = mode === 'bot';
+  const sideEls = els[side];
+  sideEls.source.disabled = !enabled;
+  sideEls.exampleBtn.disabled = !enabled;
+  if (sideEls.languageGroup) {
+    Array.from(sideEls.languageGroup.children).forEach((btn) => {
+      btn.disabled = !enabled;
+    });
+  }
 }
 
 /**
