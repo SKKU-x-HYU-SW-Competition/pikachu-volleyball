@@ -32,12 +32,9 @@ export const GAUGE_ON_RECEIVE = 15;
 export const GAUGE_ON_EXTRA_TOUCH = -5;
 
 /**
- * Applied to the first contact of a rally (the serve). Zero because the
- * original game already awards the serve to whoever just scored
- * (pikavolley.js:374-386), so paying gauge on top of it would compound the
- * lead. If the serve rule ever changes to "loser serves" or "alternating
- * serve", D-020 says this becomes GAUGE_ON_RECEIVE -- this constant is the
- * only thing that needs to change.
+ * Applied to the first contact of a rally (the serve). A serve is not a
+ * receive -- nobody had to read and reach a ball to make it -- so it earns
+ * nothing. Tuning stub like the rest of this file.
  * @constant @type {number}
  */
 export const GAUGE_ON_SERVE = 0;
