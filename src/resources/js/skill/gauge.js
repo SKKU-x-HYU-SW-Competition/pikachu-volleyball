@@ -22,7 +22,7 @@ export const GAUGE_INITIAL = 0;
  * the gauge.
  * @constant @type {number}
  */
-export const GAUGE_ON_RECEIVE = 10;
+export const GAUGE_ON_RECEIVE = 15;
 
 /**
  * Applied when touching the ball again on one's own side instead of sending it

@@ -129,7 +129,7 @@
   "meta":  { "score": { "self": 7, "opp": 6 }, "isPlayer2Serve": false, "rallyFrameCount": 42 },
   "config": {
     "tickFrameGroupSize": 3,
-    "gauge": { "min": 0, "max": 100, "onReceive": 10, "onExtraTouch": -5, "onServe": 0 },
+    "gauge": { "min": 0, "max": 100, "onReceive": 15, "onExtraTouch": -5, "onServe": 0 },
     "claw":  { "cost": 50, "width": 60, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
   }
 }

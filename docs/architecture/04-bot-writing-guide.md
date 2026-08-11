@@ -176,7 +176,7 @@ def decide(s):
   "meta":  { "score": { "self": 7, "opp": 6 }, "isPlayer2Serve": false, "rallyFrameCount": 42 },
   "config": {
     "tickFrameGroupSize": 3,
-    "gauge": { "min": 0, "max": 100, "onReceive": 10, "onExtraTouch": -5, "onServe": 0 },
+    "gauge": { "min": 0, "max": 100, "onReceive": 15, "onExtraTouch": -5, "onServe": 0 },
     "claw":  { "cost": 50, "width": 60, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
   }
 }
@@ -264,7 +264,7 @@ return {'x': 0, 'y': 0, 'hit': 0, 'skillX': 300}
 if (s.self.gauge >= s.config.claw.cost) { /* 발동 가능 */ }
 ```
 
-- `0 ~ config.gauge.max`(100) 범위. 상대에게서 넘어온 공을 처음 받으면 `config.gauge.onReceive`(+10),
+- `0 ~ config.gauge.max`(100) 범위. 상대에게서 넘어온 공을 처음 받으면 `config.gauge.onReceive`(+15),
   자기 진영에서 이어 치면 `config.gauge.onExtraTouch`(-5), 서브는 `config.gauge.onServe`(0)다.
   즉 **한 번에 깔끔하게 넘길수록 이득**이고, 경기 시작 시 0으로 리셋된다(랠리가 끝나도 유지).
 - `opp.gauge`도 보인다. 상대가 `config.claw.cost` 이상이면 언제든 맞을 수 있다는 뜻이다.

@@ -54,7 +54,7 @@
 | [ADR-0022](decisions/ADR-0022-bot-skill-action-field.md) | 봇 액션에 스킬 발동 필드 `skillX` 추가 | RESOLVED (회의 승인 전 / 스냅샷 확장은 별도) |
 | [ADR-0023](decisions/ADR-0023-snapshot-skill-state.md) | 스냅샷에 게이지·claw 예고·튜닝 상수 노출 | RESOLVED (회의 승인 전) |
 | [ADR-0024](decisions/ADR-0024-rally-boundary-for-skills.md) | 랠리 경계 판정 정정 (착지 후에도 게이지가 차던 버그) | RESOLVED (회의 승인 전) |
-| [ADR-0025](decisions/ADR-0025-gauge-cost-vs-charge-rate.md) | 게이지 충전 속도 대비 claw 비용 (봇 대전에서 스킬이 거의 안 나옴) | **OPEN — 회의 안건** |
+| [ADR-0025](decisions/ADR-0025-gauge-cost-vs-charge-rate.md) | 게이지 충전 속도 대비 claw 비용 (봇 대전에서 스킬이 거의 안 나옴) | PARTIAL (onReceive 15 확정 / CLAW_COST 미결) |
 | [ADR-0026](decisions/ADR-0026-touch-limit-vs-smash-logic.md) | 5회 터치 제한과 원작 AI의 "확실할 때만 스매시" 로직 충돌 | PARTIAL (가이드 문서화 완료 / 규칙 수치는 회의 안건) |
 | [ADR-0027](decisions/ADR-0027-touch-limit-rally-gate.md) | 터치 제한도 `isRallyLive()`를 쓰도록 통일 | **OPEN (미착수)** |
 
