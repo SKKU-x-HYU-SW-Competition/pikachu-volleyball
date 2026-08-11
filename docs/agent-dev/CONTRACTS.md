@@ -130,7 +130,7 @@
   "config": {
     "tickFrameGroupSize": 3,
     "gauge": { "min": 0, "max": 100, "onReceive": 10, "onExtraTouch": -5, "onServe": 0 },
-    "claw":  { "cost": 50, "width": 96, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
+    "claw":  { "cost": 50, "width": 60, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
   }
 }
 ```
