@@ -11,8 +11,10 @@ code/
 ├── javascript/
 │   ├── 01_basic_follow.js
 │   ├── 02_jump_and_hit.js
-│   └── 03_landing_prediction.js
+│   ├── 03_landing_prediction.js
+│   └── 04_complete_bot.js
 └── python/
     ├── 01_basic_follow.py
     ├── 02_jump_and_hit.py
-    └── 03_landing_prediction.py
+    ├── 03_landing_prediction.py
+    └── 04_complete_bot.py
