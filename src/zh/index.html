@@ -461,7 +461,7 @@
           <p class="small">
             用於犯規判定、還原中斷比賽的比分，以及強制推進卡住的回合。比分按鈕
             只會改變比分，不會影響進行中的回合；請先還原比分，需要時再按
-            「下一回合」。
+            「下一回合」，並自行選擇由哪一方發球。
           </p>
           <p class="operator-score" id="operator-status">0 : 0</p>
           <div class="operator-columns">
@@ -489,8 +489,19 @@
             </div>
           </div>
           <div class="operator-actions">
-            <button type="button" id="operator-next-round-btn" class="btn-in-box">
-              下一回合
+            <button
+              type="button"
+              id="operator-next-round-left-btn"
+              class="btn-in-box"
+            >
+              下一回合（左方發球）
+            </button>
+            <button
+              type="button"
+              id="operator-next-round-right-btn"
+              class="btn-in-box"
+            >
+              下一回合（右方發球）
             </button>
             <button type="button" id="operator-reset-btn" class="btn-in-box">
               重設比分

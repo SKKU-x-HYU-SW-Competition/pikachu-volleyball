@@ -119,20 +119,31 @@ export function adjustScore(pikaVolley, side, delta) {
 }
 
 /**
- * Cut the current rally short and move on to the next one.
+ * Cut the current rally short and move on to the next one, with the referee
+ * naming who serves it.
  *
- * Mirrors what round() does once the ball hits the ground: mark the round
- * ended, skip the slow-motion replay, and hand over to afterEndOfRound, which
- * fades out and sets up the next serve. Outside a match (intro/menu) and after
- * game over there is no rally to end, so this does nothing.
+ * Mirrors what round() does once the ball hits the ground: set the server,
+ * mark the round ended, skip the slow-motion replay, and hand over to
+ * afterEndOfRound, which fades out and sets up the serve. Outside a match
+ * (intro/menu) and after game over there is no rally to end, so this does
+ * nothing.
+ *
+ * Setting the server is not optional. round() re-decides it on every point, so
+ * a rally ended here instead would otherwise leave the serve wherever it last
+ * landed -- pressing "next rally" repeatedly keeps handing the serve back to
+ * the same side. The referee names it explicitly rather than drawing at random
+ * because this button exists for exceptional situations (a stalled rally, a
+ * disputed call) where who gets the ball back is a judgement, not a coin flip.
  *
  * @param {PikachuVolleyball} pikaVolley
+ * @param {boolean} nextServeIsPlayer2 true to give the serve to the right side
  * @return {boolean} whether a rally was actually ended
  */
-export function forceNextRound(pikaVolley) {
+export function forceNextRound(pikaVolley, nextServeIsPlayer2) {
   if (!isDuringMatch(pikaVolley) || pikaVolley.gameEnded === true) {
     return false;
   }
+  pikaVolley.isPlayer2Serve = nextServeIsPlayer2;
   pikaVolley.roundEnded = true;
   pikaVolley.slowMotionFramesLeft = 0;
   pikaVolley.slowMotionNumOfSkippedFrames = 0;
@@ -142,15 +153,20 @@ export function forceNextRound(pikaVolley) {
 }
 
 /**
- * Give one side a point and end the rally -- the referee's "that's a foul,
- * point to them" action, and the entry point the touch-limit rule will call.
+ * Give one side a point and end the rally -- the entry point the touch-limit
+ * rule calls.
+ *
+ * Unlike the referee's buttons this picks the server through
+ * {@link PikachuVolleyball#decideNextServe}, exactly as round() does when a
+ * ball hits the ground: a point won by a rule is a normal point, so it must
+ * follow the match's serve rule rather than being decided by hand.
  *
  * @param {PikachuVolleyball} pikaVolley
  * @param {number} side {@link LEFT} or {@link RIGHT}
  */
 export function awardPoint(pikaVolley, side) {
   adjustScore(pikaVolley, side, 1);
-  forceNextRound(pikaVolley);
+  forceNextRound(pikaVolley, pikaVolley.decideNextServe(side === RIGHT));
 }
 
 /**
@@ -169,7 +185,7 @@ export function resetScores(pikaVolley) {
  *   openBtn: Element, box: Element, closeBtn: Element, status: Element,
  *   leftPlusBtn: Element, leftMinusBtn: Element,
  *   rightPlusBtn: Element, rightMinusBtn: Element,
- *   nextRoundBtn: Element, resetBtn: Element,
+ *   nextRoundLeftBtn: Element, nextRoundRightBtn: Element, resetBtn: Element,
  * }|null} null when this locale's HTML has no operator console markup
  */
 function collectElements() {
@@ -187,7 +203,8 @@ function collectElements() {
     leftMinusBtn: document.getElementById('operator-left-minus-btn'),
     rightPlusBtn: document.getElementById('operator-right-plus-btn'),
     rightMinusBtn: document.getElementById('operator-right-minus-btn'),
-    nextRoundBtn: document.getElementById('operator-next-round-btn'),
+    nextRoundLeftBtn: document.getElementById('operator-next-round-left-btn'),
+    nextRoundRightBtn: document.getElementById('operator-next-round-right-btn'),
     resetBtn: document.getElementById('operator-reset-btn'),
   };
 }
@@ -199,7 +216,7 @@ function collectElements() {
  * @param {import('@pixi/ticker').Ticker} ticker
  * @return {{
  *   adjustScore: function(number, number): void,
- *   forceNextRound: function(): boolean,
+ *   forceNextRound: function(boolean): boolean,
  *   awardPoint: function(number): void,
  *   resetScores: function(): void,
  * }} bound helpers, so game rules implemented elsewhere can award points
@@ -208,7 +225,8 @@ function collectElements() {
 export function setUpOperatorConsole(pikaVolley, ticker) {
   const api = {
     adjustScore: (side, delta) => adjustScore(pikaVolley, side, delta),
-    forceNextRound: () => forceNextRound(pikaVolley),
+    forceNextRound: (nextServeIsPlayer2) =>
+      forceNextRound(pikaVolley, nextServeIsPlayer2),
     awardPoint: (side) => awardPoint(pikaVolley, side),
     resetScores: () => resetScores(pikaVolley),
   };
@@ -233,7 +251,12 @@ export function setUpOperatorConsole(pikaVolley, ticker) {
   els.leftMinusBtn.addEventListener('click', () => api.adjustScore(LEFT, -1));
   els.rightPlusBtn.addEventListener('click', () => api.adjustScore(RIGHT, 1));
   els.rightMinusBtn.addEventListener('click', () => api.adjustScore(RIGHT, -1));
-  els.nextRoundBtn.addEventListener('click', () => api.forceNextRound());
+  els.nextRoundLeftBtn.addEventListener('click', () =>
+    api.forceNextRound(false)
+  );
+  els.nextRoundRightBtn.addEventListener('click', () =>
+    api.forceNextRound(true)
+  );
   els.resetBtn.addEventListener('click', () => api.resetScores());
 
   // The score can change without the operator touching anything (a rally
@@ -257,8 +280,12 @@ export function setUpOperatorConsole(pikaVolley, ticker) {
     // @ts-ignore
     els.rightPlusBtn.disabled = atMax(RIGHT);
     // @ts-ignore
-    els.nextRoundBtn.disabled =
+    const noRallyToEnd =
       !isDuringMatch(pikaVolley) || pikaVolley.gameEnded === true;
+    // @ts-ignore
+    els.nextRoundLeftBtn.disabled = noRallyToEnd;
+    // @ts-ignore
+    els.nextRoundRightBtn.disabled = noRallyToEnd;
   });
 
   return api;

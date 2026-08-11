@@ -470,8 +470,9 @@
           <p class="small">
             반칙 판정, 중단된 경기의 점수 복구, 멈춘 랠리 강제 진행에
             사용합니다. 점수 버튼은 점수만 바꾸고 진행 중인 랠리는 건드리지
-            않으므로, 점수를 여러 번 눌러 복구한 뒤 필요하면 "다음 랠리로"를
-            누르세요.
+            않으므로, 점수를 여러 번 눌러 복구한 뒤 필요하면 "다음 랠리"를
+            누르세요. 다음 랠리를 누를 때는 어느 쪽 서브로 재개할지 직접
+            고릅니다.
           </p>
           <p class="operator-score" id="operator-status">0 : 0</p>
           <div class="operator-columns">
@@ -499,8 +500,19 @@
             </div>
           </div>
           <div class="operator-actions">
-            <button type="button" id="operator-next-round-btn" class="btn-in-box">
-              다음 랠리로
+            <button
+              type="button"
+              id="operator-next-round-left-btn"
+              class="btn-in-box"
+            >
+              다음 랠리 (왼쪽 서브)
+            </button>
+            <button
+              type="button"
+              id="operator-next-round-right-btn"
+              class="btn-in-box"
+            >
+              다음 랠리 (오른쪽 서브)
             </button>
             <button type="button" id="operator-reset-btn" class="btn-in-box">
               점수 초기화

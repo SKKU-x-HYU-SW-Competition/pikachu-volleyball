@@ -472,7 +472,8 @@
             For foul calls, restoring the score of an interrupted match, and
             forcing a stalled rally onward. The score buttons only change the
             score and leave the rally running, so rebuild the score first and
-            then press "Next rally" if you need to.
+            then press "Next rally" if you need to -- picking which side serves
+            the restart.
           </p>
           <p class="operator-score" id="operator-status">0 : 0</p>
           <div class="operator-columns">
@@ -500,8 +501,19 @@
             </div>
           </div>
           <div class="operator-actions">
-            <button type="button" id="operator-next-round-btn" class="btn-in-box">
-              Next rally
+            <button
+              type="button"
+              id="operator-next-round-left-btn"
+              class="btn-in-box"
+            >
+              Next rally (left serve)
+            </button>
+            <button
+              type="button"
+              id="operator-next-round-right-btn"
+              class="btn-in-box"
+            >
+              Next rally (right serve)
             </button>
             <button type="button" id="operator-reset-btn" class="btn-in-box">
               Reset score
