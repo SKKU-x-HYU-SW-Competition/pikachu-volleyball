@@ -119,10 +119,11 @@ def decide(snapshot):
             6
         )
 
-        attack_zone = (
-            ball_on_my_side
-            or abs(ball['x'] - NET_X) < 35
-        )
+        # Power hit은 공이 확실히 자기 진영에 있을 때만 사용합니다.
+        #
+        # 네트 반대편 공까지 공격하려 하면 power hit의 수평 방향이
+        # 자기 코트 쪽으로 바뀔 수 있으므로 공격하지 않습니다.
+        attack_zone = ball_on_my_side
 
         if (
             attack_zone
@@ -131,12 +132,64 @@ def decide(snapshot):
         ):
             hit = 1
 
-            # 상대가 네트에 가까우면 위로 보내 block을 피하고,
-            # 그렇지 않으면 아래로 내려꽂는 단순 공격을 사용합니다.
-            if abs(opp['x'] - NET_X) < 72:
+            # x의 절댓값이 1이면 더 빠른 power hit이 됩니다.
+            x = move_toward(
+                self_player['x'],
+                ball['x'],
+                6
+            )
+
+            if x == 0:
+                x = 1 if is_left_side(snapshot) else -1
+
+            # DOWN을 자기 코트 깊은 곳에서 사용하면
+            # 네트를 넘기 전에 바닥에 떨어질 수 있습니다.
+            #
+            # FAST DOWN(|vx|=20)을 했다고 가정하고
+            # 네트 도달 시점의 대략적인 y 위치를 계산합니다.
+            frames_to_net = max(
+                1,
+                int(
+                    (
+                        abs(ball['x'] - NET_X)
+                        + 19
+                    ) // 20
+                )
+            )
+
+            down_y_at_net = (
+                ball['y']
+                + frames_to_net * 30
+                + (
+                    frames_to_net
+                    * (frames_to_net - 1)
+                ) / 2
+            )
+
+            opponent_blocking = (
+                abs(opp['x'] - NET_X) < 72
+                and (
+                    opp['state'] == 1
+                    or opp['state'] == 2
+                )
+            )
+
+            safe_down = down_y_at_net < 150
+
+            # 공격 선택:
+            #
+            # 1. 상대가 네트에서 뛰고 있으면 UP
+            # 2. DOWN이 안전하게 네트를 넘으면 DOWN
+            # 3. 공이 충분히 높으면 FLAT
+            # 4. 낮거나 깊은 공은 UP
+            if opponent_blocking:
                 y = -1
-            else:
+            elif safe_down:
                 y = 1
+            elif ball['y'] < 155:
+                y = 0
+            else:
+                y = -1
 
         return {
             'x': x,
@@ -176,10 +229,8 @@ def decide(snapshot):
     #
     # 이렇게 하면 판단 주기 사이에 공이 먼저 몸에 닿아
     # 일반 바운스가 되는 경우를 줄일 수 있습니다.
-    attack_zone = (
-        ball_on_my_side
-        or abs(ball['x'] - NET_X) < 30
-    )
+    # 점프 공격도 공이 자기 진영에 있을 때만 시작합니다.
+    attack_zone = ball_on_my_side
 
     if (
         self_player['state'] == 0

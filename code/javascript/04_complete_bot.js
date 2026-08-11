@@ -100,9 +100,13 @@ function decide(snapshot) {
   if (self.state === 1 || self.state === 2) {
     x = moveToward(self.x, ball.x, 6);
 
-    const attackZone =
-      ballOnMySide ||
-      Math.abs(ball.x - NET_X) < 35;
+    /*
+     * Power hit은 공이 확실히 자기 진영에 있을 때만 사용합니다.
+     *
+     * 네트 반대편 공까지 공격하려 하면 power hit의 수평 방향이
+     * 자기 코트 쪽으로 바뀔 수 있으므로 공격하지 않습니다.
+     */
+    const attackZone = ballOnMySide;
 
     if (
       attackZone &&
@@ -112,13 +116,55 @@ function decide(snapshot) {
       hit = 1;
 
       /*
-       * 상대가 네트에 가까우면 위로 보내 block을 피하고,
-       * 그렇지 않으면 아래로 내려꽂는 단순 공격을 사용합니다.
+       * x의 절댓값이 1이면 더 빠른 power hit이 됩니다.
+       * 공 쪽으로 이동하되 이미 정렬되어 있으면 네트 방향을 사용합니다.
        */
-      if (Math.abs(opp.x - NET_X) < 72) {
+      x = moveToward(self.x, ball.x, 6);
+
+      if (x === 0) {
+        x = isLeftSide(snapshot) ? 1 : -1;
+      }
+
+      /*
+       * DOWN은 자기 코트 깊은 곳에서 사용하면
+       * 네트를 넘기 전에 바닥에 떨어질 수 있습니다.
+       *
+       * 따라서 현재 위치에서 FAST DOWN(|vx|=20)을 했다고 가정하고
+       * 네트에 도달할 때의 대략적인 y 위치를 계산합니다.
+       */
+      const framesToNet = Math.max(
+        1,
+        Math.ceil(Math.abs(ball.x - NET_X) / 20)
+      );
+
+      const downYAtNet =
+        ball.y +
+        framesToNet * 30 +
+        (framesToNet * (framesToNet - 1)) / 2;
+
+      const opponentBlocking =
+        Math.abs(opp.x - NET_X) < 72 &&
+        (opp.state === 1 || opp.state === 2);
+
+      const safeDown =
+        downYAtNet < 150;
+
+      /*
+       * 공격 선택:
+       *
+       * 1. 상대가 네트에서 뛰고 있으면 UP으로 block 회피
+       * 2. DOWN이 안전하게 네트를 넘을 수 있으면 DOWN
+       * 3. 공이 충분히 높으면 FLAT
+       * 4. 낮거나 깊은 공은 UP으로 안전하게 넘김
+       */
+      if (opponentBlocking) {
         y = -1;
-      } else {
+      } else if (safeDown) {
         y = 1;
+      } else if (ball.y < 155) {
+        y = 0;
+      } else {
+        y = -1;
       }
     }
 
@@ -162,9 +208,10 @@ function decide(snapshot) {
    * 이렇게 하면 판단 주기 사이에 공이 먼저 몸에 닿아
    * 일반 바운스가 되는 경우를 줄일 수 있습니다.
    */
-  const attackZone =
-    ballOnMySide ||
-    Math.abs(ball.x - NET_X) < 30;
+  /*
+   * 점프 공격도 공이 자기 진영에 있을 때만 시작합니다.
+   */
+  const attackZone = ballOnMySide;
 
   if (
     self.state === 0 &&
