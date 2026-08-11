@@ -7,6 +7,7 @@
  * the wiring.
  */
 'use strict';
+import { isRallyLive } from './rally.js';
 
 /** @constant @type {number} */
 export const GAUGE_MIN = 0;
@@ -153,10 +154,12 @@ export class GaugeTracker {
     }
     this.wasStartingNewGame = isStartingNewGame;
 
-    // Contacts only happen while the engine runs, which is only in round().
-    // Leaving round() therefore means the rally is over, so the next contact
-    // is a serve.
-    if (pikaVolley.state !== pikaVolley.round) {
+    // Only contacts inside a live rally charge the gauge. Note this is not the
+    // same as "the engine is running": it keeps running for ~1.2s after the
+    // ball lands and through the game-end message, and hits in those windows
+    // used to charge the gauge (D-024). Once the rally is over the next
+    // contact is a serve, so the last-toucher memory is cleared here.
+    if (!isRallyLive(pikaVolley)) {
       this.lastToucherIndex = null;
       this.previousCollisionFlags = [false, false];
       return;
