@@ -12,6 +12,7 @@
  * applies to keyboard, bot and built-in AI players alike.
  */
 'use strict';
+import { isRallyLive } from './rally.js';
 
 /** @constant @type {number} gauge spent per cast */
 export const CLAW_COST = 50;
@@ -140,7 +141,7 @@ export class ClawTracker {
    * @return {boolean} whether the cast happened
    */
   tryCast(casterIndex, pikaVolley, aimX = null) {
-    if (pikaVolley.state !== pikaVolley.round) {
+    if (!isRallyLive(pikaVolley)) {
       return false;
     }
     if (this.claws[casterIndex] !== null) {
@@ -171,10 +172,12 @@ export class ClawTracker {
    * @param {import('../pikavolley.js').PikachuVolleyball} pikaVolley
    */
   observe(pikaVolley) {
-    // Claws only live inside a rally. Leaving round() cancels them, so a claw
-    // cast just before a point cannot go off during the next serve. The gauge
-    // that paid for it is not refunded (ADR-0021 section 4-4).
-    if (pikaVolley.state !== pikaVolley.round) {
+    // Claws only live inside a rally, so a claw cast just before a point
+    // cannot go off during the next serve. The gauge that paid for it is not
+    // refunded (ADR-0021 section 4-4). "Inside a rally" excludes the frames
+    // after the ball lands even though the engine is still running there
+    // (D-024) -- a claw must not strike once the point is already decided.
+    if (!isRallyLive(pikaVolley)) {
       this.clear();
       return;
     }

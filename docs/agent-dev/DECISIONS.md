@@ -53,6 +53,7 @@
 | [ADR-0021](decisions/ADR-0021-claw-skill.md) | 첫 번째 스킬 「claw」 (범위 예고 → 발톱 → 기절) | PARTIAL (콘셉트·조준 규칙·판정 축 확정 / 수치는 stub) |
 | [ADR-0022](decisions/ADR-0022-bot-skill-action-field.md) | 봇 액션에 스킬 발동 필드 `skillX` 추가 | RESOLVED (회의 승인 전 / 스냅샷 확장은 별도) |
 | [ADR-0023](decisions/ADR-0023-snapshot-skill-state.md) | 스냅샷에 게이지·claw 예고·튜닝 상수 노출 | RESOLVED (회의 승인 전) |
+| [ADR-0024](decisions/ADR-0024-rally-boundary-for-skills.md) | 랠리 경계 판정 정정 (착지 후에도 게이지가 차던 버그) | RESOLVED (회의 승인 전) |
 
 *(ADR-0020은 충전 규칙만 확정이고 스킬 효과·소모량·봇 프로토콜 확장·사람 발동키는 아직 OPEN입니다 —
 회의 안건. 원래 `feature/5-gauge-system`에서 ADR-0019로 등재됐다가, 같은 번호를 RATIO 결정이 먼저
