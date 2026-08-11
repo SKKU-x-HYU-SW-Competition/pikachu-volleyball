@@ -86,7 +86,10 @@ export class IntroView {
 }
 
 /**
- * Class representing menu view where you can select "play with computer" or "play with friend"
+ * Class representing the menu view. Originally exposed two options
+ * ("play with computer" / "play with friend"); now only one button is shown
+ * and it always starts a two-player match. The button image is expected to
+ * be swapped later for a "press Enter to start" prompt.
  */
 export class MenuView {
   /**
@@ -106,10 +109,7 @@ export class MenuView {
         0,
         0
       ),
-      withWho: [
-        makeSpriteWithAnchorXY(textures, TEXTURES.WITH_COMPUTER, 0, 0),
-        makeSpriteWithAnchorXY(textures, TEXTURES.WITH_FRIEND, 0, 0),
-      ],
+      withWho: [makeSpriteWithAnchorXY(textures, TEXTURES.WITH_FRIEND, 0, 0)],
       fight: makeSpriteWithAnchorXY(textures, TEXTURES.FIGHT, 0, 0),
     };
 
@@ -133,11 +133,9 @@ export class MenuView {
     this.container.addChild(this.messages.pokemon);
     this.container.addChild(this.messages.pikachuVolleyball);
     this.container.addChild(this.messages.withWho[0]);
-    this.container.addChild(this.messages.withWho[1]);
     this.container.addChild(this.messages.fight);
     this.initializeVisibles();
 
-    this.selectedWithWho = -1; // 0: with computer, 1: with friend, -1: not selected
     this.selectedWithWhoMessageSizeIncrement = 2;
   }
 
@@ -273,7 +271,11 @@ export class MenuView {
 
   /**
    * referred to FUN_00405ec0
-   * Draw with who messages (with computer or with friend) as frame goes
+   * Draw the single start button. It is always in the "selected" state so the
+   * grow-in-place animation from the original two-option menu still runs.
+   * The button is centered vertically between where the two original options
+   * used to sit (y=184 and y=214) so the layout stays balanced with just one
+   * button.
    * @param {number} frameCounter
    */
   drawWithWhoMessages(frameCounter) {
@@ -282,9 +284,7 @@ export class MenuView {
     const h = withWho[0].texture.height;
 
     if (frameCounter === 0) {
-      for (let i = 0; i < 2; i++) {
-        withWho[i].visible = false;
-      }
+      withWho[0].visible = false;
       return;
     }
 
@@ -292,28 +292,24 @@ export class MenuView {
       if (this.selectedWithWhoMessageSizeIncrement < 10) {
         this.selectedWithWhoMessageSizeIncrement += 1;
       }
-      for (let i = 0; i < 2; i++) {
-        const selected = Number(this.selectedWithWho === i); // 1 if selected, 0 otherwise
-        const halfWidthIncrement =
-          selected * (this.selectedWithWhoMessageSizeIncrement + 2);
-        const halfHeightIncrement =
-          selected * this.selectedWithWhoMessageSizeIncrement;
+      const halfWidthIncrement = this.selectedWithWhoMessageSizeIncrement + 2;
+      const halfHeightIncrement = this.selectedWithWhoMessageSizeIncrement;
 
-        withWho[i].visible = true;
-        withWho[i].x = RATIO * 216 - w / 2 - RATIO * halfWidthIncrement;
-        withWho[i].y = RATIO * (184 + 30 * i - halfHeightIncrement);
-        withWho[i].width = w + RATIO * 2 * halfWidthIncrement;
-        withWho[i].height = h + RATIO * 2 * halfHeightIncrement;
-      }
+      withWho[0].visible = true;
+      withWho[0].x = RATIO * 216 - w / 2 - RATIO * halfWidthIncrement;
+      withWho[0].y = RATIO * (199 - halfHeightIncrement);
+      withWho[0].width = w + RATIO * 2 * halfWidthIncrement;
+      withWho[0].height = h + RATIO * 2 * halfHeightIncrement;
     }
   }
 
   /**
-   * Select with who for the effect that selected option gets bigger
-   * @param {number} i 0: with computer, 1: with friend
+   * Reset the button's grow-in-place animation so the next menu entry starts
+   * from the small size. Kept as a method (rather than inlined into `menu()`
+   * in pikavolley.js) so the internal animation state stays encapsulated
+   * inside MenuView.
    */
-  selectWithWho(i) {
-    this.selectedWithWho = i;
+  selectWithWho() {
     this.selectedWithWhoMessageSizeIncrement = 2;
   }
 }
