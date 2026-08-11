@@ -4,10 +4,11 @@
 'use strict';
 
 import { localStorageWrapper } from './utils/local_storage_wrapper.js';
+import { SERVE_RULE } from './pikavolley.js';
 
 /** @typedef {import('./pikavolley.js').PikachuVolleyball} PikachuVolleyball */
 /** @typedef {import('@pixi/ticker').Ticker} Ticker */
-/** @typedef {{graphic?: string, bgm?: string, sfx?: string, speed?: string, winningScore?: string}} Options */
+/** @typedef {{graphic?: string, bgm?: string, sfx?: string, speed?: string, winningScore?: string, serveRule?: string}} Options */
 
 /**
  * Enum for "game paused by what?".
@@ -120,6 +121,17 @@ export function setUpUI(pikaVolley, ticker) {
         pikaVolley.winningScore = 15;
         break;
     }
+    // The stored values are SERVE_RULE's own values, so an unrecognised one
+    // (an older save, a hand-edited key) falls through and leaves the rule at
+    // whatever the game was constructed with rather than silently becoming
+    // something else.
+    switch (options.serveRule) {
+      case SERVE_RULE.WINNER:
+      case SERVE_RULE.LOSER:
+      case SERVE_RULE.RANDOM:
+        pikaVolley.serveRule = options.serveRule;
+        break;
+    }
   };
 
   /**
@@ -143,6 +155,9 @@ export function setUpUI(pikaVolley, ticker) {
     if (options.winningScore) {
       localStorageWrapper.set('pv-offline-winningScore', options.winningScore);
     }
+    if (options.serveRule) {
+      localStorageWrapper.set('pv-offline-serveRule', options.serveRule);
+    }
   };
 
   /**
@@ -155,6 +170,7 @@ export function setUpUI(pikaVolley, ticker) {
     sfx: localStorageWrapper.get('pv-offline-sfx'),
     speed: localStorageWrapper.get('pv-offline-speed'),
     winningScore: localStorageWrapper.get('pv-offline-winningScore'),
+    serveRule: localStorageWrapper.get('pv-offline-serveRule'),
   });
 
   /**
@@ -282,6 +298,24 @@ function setUpBtns(pikaVolley, applyAndSaveOptions) {
   fastSpeedBtn.addEventListener('click', () => {
     applyAndSaveOptions({ speed: 'fast' });
   });
+
+  // Serve rule takes effect from the next point on, so unlike winning score
+  // it needs no guard about the match already being past it.
+  document
+    .getElementById('serve-rule-random-btn')
+    .addEventListener('click', () => {
+      applyAndSaveOptions({ serveRule: SERVE_RULE.RANDOM });
+    });
+  document
+    .getElementById('serve-rule-winner-btn')
+    .addEventListener('click', () => {
+      applyAndSaveOptions({ serveRule: SERVE_RULE.WINNER });
+    });
+  document
+    .getElementById('serve-rule-loser-btn')
+    .addEventListener('click', () => {
+      applyAndSaveOptions({ serveRule: SERVE_RULE.LOSER });
+    });
 
   const winningScore5Btn = document.getElementById('winning-score-5-btn');
   const winningScore10Btn = document.getElementById('winning-score-10-btn');
@@ -474,6 +508,7 @@ function setUpBtns(pikaVolley, applyAndSaveOptions) {
       sfx: 'stereo',
       speed: 'medium',
       winningScore: '15',
+      serveRule: SERVE_RULE.RANDOM,
     };
     applyAndSaveOptions(defaultOptions);
   });
@@ -578,6 +613,19 @@ function setSelectedOptionsBtn(options) {
         break;
     }
   }
+  if (options.serveRule) {
+    const byRule = {
+      [SERVE_RULE.RANDOM]: document.getElementById('serve-rule-random-btn'),
+      [SERVE_RULE.WINNER]: document.getElementById('serve-rule-winner-btn'),
+      [SERVE_RULE.LOSER]: document.getElementById('serve-rule-loser-btn'),
+    };
+    const selected = byRule[options.serveRule];
+    if (selected) {
+      for (const btn of Object.values(byRule)) {
+        btn.classList.toggle('selected', btn === selected);
+      }
+    }
+  }
 }
 
 /**
@@ -637,6 +685,11 @@ function setUpToShowDropdownsAndSubmenus(pikaVolley) {
       showSubmenu('practice-mode-submenu-btn', 'practice-mode-submenu');
     });
   document
+    .getElementById('serve-rule-submenu-btn')
+    .addEventListener('mouseover', () => {
+      showSubmenu('serve-rule-submenu-btn', 'serve-rule-submenu');
+    });
+  document
     .getElementById('reset-to-default-btn')
     .addEventListener('mouseover', () => {
       hideSubmenus();
@@ -662,6 +715,11 @@ function setUpToShowDropdownsAndSubmenus(pikaVolley) {
     .getElementById('practice-mode-submenu-btn')
     .addEventListener('click', () => {
       showSubmenu('practice-mode-submenu-btn', 'practice-mode-submenu');
+    });
+  document
+    .getElementById('serve-rule-submenu-btn')
+    .addEventListener('click', () => {
+      showSubmenu('serve-rule-submenu-btn', 'serve-rule-submenu');
     });
   document
     .getElementById('reset-to-default-btn')

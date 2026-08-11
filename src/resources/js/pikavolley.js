@@ -6,6 +6,28 @@ import { GROUND_HALF_WIDTH, PikaPhysics } from './physics.js';
 import { MenuView, GameView, FadeInOut, IntroView } from './view.js';
 import { PikaKeyboard } from './keyboard.js';
 import { PikaAudio } from './audio.js';
+import { rand } from './rand.js';
+
+/**
+ * Who gets to serve the next rally.
+ *
+ * The original game gives the serve to whoever just scored (`WINNER`), which
+ * compounds a lead: the player ahead keeps the serve advantage. For the
+ * tournament we default to `RANDOM` so a run of points doesn't also hand over
+ * a run of serves.
+ *
+ * Kept as a switch rather than replacing the original branch outright so a
+ * match can be put back on original rules without touching the scoring code.
+ * @enum {string}
+ */
+export const SERVE_RULE = {
+  /** original game behaviour: the player who just scored serves */
+  WINNER: 'winner',
+  /** the player who just conceded serves, so the trailing side gets the ball */
+  LOSER: 'loser',
+  /** tournament default: each serve is an independent coin flip */
+  RANDOM: 'random',
+};
 
 /** @typedef {import('@pixi/display').Container} Container */
 /** @typedef {import('@pixi/loaders').LoaderResource} LoaderResource */
@@ -76,6 +98,8 @@ export class PikachuVolleyball {
     this.roundEnded = false;
     /** @type {boolean} Will player 2 serve? */
     this.isPlayer2Serve = false;
+    /** @type {SERVE_RULE[keyof SERVE_RULE]} how the next server is picked */
+    this.serveRule = SERVE_RULE.RANDOM;
 
     /** @type {number} frame counter */
     this.frameCounter = 0;
@@ -111,6 +135,33 @@ export class PikachuVolleyball {
      * @type {GameState}
      */
     this.state = this.intro;
+  }
+
+  /**
+   * Pick who serves the next rally, per {@link SERVE_RULE}.
+   *
+   * Also used for the very first serve of a match, where there is no previous
+   * point. Passing `false` there reproduces the original game's "player 1
+   * serves first" under `WINNER`; under `LOSER` it hands the opening serve to
+   * player 2 and under `RANDOM` it is ignored. Neither is meaningful -- there
+   * is no winner yet -- but both are deterministic, which is enough.
+   *
+   * Draws from {@link rand} rather than `Math.random` so that a deterministic
+   * RNG installed through `setCustomRng` (rand.js) covers the serve too --
+   * otherwise a replayed match would diverge at the first serve.
+   *
+   * @param {boolean} isPlayer2Winner did player 2 win the point just scored?
+   * @return {boolean} will player 2 serve?
+   */
+  decideNextServe(isPlayer2Winner) {
+    switch (this.serveRule) {
+      case SERVE_RULE.RANDOM:
+        return rand() % 2 === 1;
+      case SERVE_RULE.LOSER:
+        return !isPlayer2Winner;
+      default:
+        return isPlayer2Winner;
+    }
   }
 
   /**
@@ -288,7 +339,7 @@ export class PikachuVolleyball {
       this.view.game.visible = true;
       this.gameEnded = false;
       this.roundEnded = false;
-      this.isPlayer2Serve = false;
+      this.isPlayer2Serve = this.decideNextServe(false);
       this.physics.player1.gameEnded = false;
       this.physics.player1.isWinner = false;
       this.physics.player2.gameEnded = false;
@@ -371,7 +422,7 @@ export class PikachuVolleyball {
       this.gameEnded === false
     ) {
       if (this.physics.ball.punchEffectX < GROUND_HALF_WIDTH) {
-        this.isPlayer2Serve = true;
+        this.isPlayer2Serve = this.decideNextServe(true);
         this.scores[1] += 1;
         if (this.scores[1] >= this.winningScore) {
           this.gameEnded = true;
@@ -381,7 +432,7 @@ export class PikachuVolleyball {
           this.physics.player2.gameEnded = true;
         }
       } else {
-        this.isPlayer2Serve = false;
+        this.isPlayer2Serve = this.decideNextServe(false);
         this.scores[0] += 1;
         if (this.scores[0] >= this.winningScore) {
           this.gameEnded = true;
