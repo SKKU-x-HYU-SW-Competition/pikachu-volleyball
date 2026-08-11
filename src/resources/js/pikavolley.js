@@ -23,6 +23,8 @@ import { rand } from './rand.js';
 export const SERVE_RULE = {
   /** original game behaviour: the player who just scored serves */
   WINNER: 'winner',
+  /** the player who just conceded serves, so the trailing side gets the ball */
+  LOSER: 'loser',
   /** tournament default: each serve is an independent coin flip */
   RANDOM: 'random',
 };
@@ -139,8 +141,10 @@ export class PikachuVolleyball {
    * Pick who serves the next rally, per {@link SERVE_RULE}.
    *
    * Also used for the very first serve of a match, where there is no previous
-   * point: passing `false` there reproduces the original game's "player 1
-   * serves first" under `WINNER`, and is ignored under `RANDOM`.
+   * point. Passing `false` there reproduces the original game's "player 1
+   * serves first" under `WINNER`; under `LOSER` it hands the opening serve to
+   * player 2 and under `RANDOM` it is ignored. Neither is meaningful -- there
+   * is no winner yet -- but both are deterministic, which is enough.
    *
    * Draws from {@link rand} rather than `Math.random` so that a deterministic
    * RNG installed through `setCustomRng` (rand.js) covers the serve too --
@@ -150,10 +154,14 @@ export class PikachuVolleyball {
    * @return {boolean} will player 2 serve?
    */
   decideNextServe(isPlayer2Winner) {
-    if (this.serveRule === SERVE_RULE.RANDOM) {
-      return rand() % 2 === 1;
+    switch (this.serveRule) {
+      case SERVE_RULE.RANDOM:
+        return rand() % 2 === 1;
+      case SERVE_RULE.LOSER:
+        return !isPlayer2Winner;
+      default:
+        return isPlayer2Winner;
     }
-    return isPlayer2Winner;
   }
 
   /**
