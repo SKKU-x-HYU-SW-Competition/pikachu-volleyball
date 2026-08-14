@@ -255,6 +255,8 @@
         </div>
       </div>
       <div id="game-canvas-container">
+        <div id="team-label-left" class="team-label team-label-left"></div>
+        <div id="team-label-right" class="team-label team-label-right"></div>
         <div class="fade-in-box about" id="about-box">
           <div id="about-box-head">
             <h1>皮卡丘打排球</h1>
@@ -401,8 +403,10 @@
         <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
           <h1>機器人測試設定</h1>
           <p class="small">
-            左右兩側可以各自獨立設定為鍵盤、你的機器人程式碼
-            （JavaScript 或 Python）、或內建AI。設定需按下「套用」才會
+            左右兩側可以各自獨立設定為鍵盤、機器人程式碼、或內建AI。
+            機器人程式碼檔案放在 <code>src/code-here/</code> 資料夾下，
+            檔名須符合 <code>&lt;team&gt;_v&lt;version&gt;.js|py</code>
+            規約，便會自動出現在下方下拉選單。設定需按下「套用」才會
             生效，屆時遊戲將重新開始。
           </p>
           <div class="bot-setup-columns">
@@ -419,23 +423,13 @@
                   <span class="check">&check; </span>內建AI
                 </button>
               </div>
-              <p class="bot-setup-language-label">語言（選擇「機器人程式碼」時適用）：</p>
-              <div class="bot-setup-language-group" id="bot-setup-left-language">
-                <button type="button" class="btn selected" data-language="js">
-                  <span class="check">&check; </span>JavaScript
-                </button>
-                <button type="button" class="btn" data-language="py">
-                  <span class="check">&check; </span>Python
-                </button>
-              </div>
-              <textarea
-                id="bot-setup-left-source"
-                class="bot-setup-textarea"
-                placeholder="在此貼上機器人程式碼（需定義 decide(snapshot) 函式）"
-              ></textarea>
-              <button type="button" id="bot-setup-left-example-btn" class="btn-in-box">
-                載入範例機器人
-              </button>
+              <label class="bot-setup-select-label" for="bot-setup-left-bot">
+                選擇機器人（選擇「機器人程式碼」時適用）：
+              </label>
+              <select
+                id="bot-setup-left-bot"
+                class="bot-setup-select"
+              ></select>
               <p id="bot-setup-left-status" class="bot-setup-status"></p>
             </div>
             <div class="bot-setup-side">
@@ -451,23 +445,13 @@
                   <span class="check">&check; </span>內建AI
                 </button>
               </div>
-              <p class="bot-setup-language-label">語言（選擇「機器人程式碼」時適用）：</p>
-              <div class="bot-setup-language-group" id="bot-setup-right-language">
-                <button type="button" class="btn selected" data-language="js">
-                  <span class="check">&check; </span>JavaScript
-                </button>
-                <button type="button" class="btn" data-language="py">
-                  <span class="check">&check; </span>Python
-                </button>
-              </div>
-              <textarea
-                id="bot-setup-right-source"
-                class="bot-setup-textarea"
-                placeholder="在此貼上機器人程式碼（需定義 decide(snapshot) 函式）"
-              ></textarea>
-              <button type="button" id="bot-setup-right-example-btn" class="btn-in-box">
-                載入範例機器人
-              </button>
+              <label class="bot-setup-select-label" for="bot-setup-right-bot">
+                選擇機器人（選擇「機器人程式碼」時適用）：
+              </label>
+              <select
+                id="bot-setup-right-bot"
+                class="bot-setup-select"
+              ></select>
               <p id="bot-setup-right-status" class="bot-setup-status"></p>
             </div>
           </div>

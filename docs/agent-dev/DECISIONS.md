@@ -57,8 +57,11 @@
 | [ADR-0025](decisions/ADR-0025-gauge-cost-vs-charge-rate.md) | 게이지 충전 속도 대비 claw 비용 (봇 대전에서 스킬이 거의 안 나옴) | PARTIAL (onReceive 15 확정 / CLAW_COST 미결) |
 | [ADR-0026](decisions/ADR-0026-touch-limit-vs-smash-logic.md) | 5회 터치 제한과 원작 AI의 "확실할 때만 스매시" 로직 충돌 | PARTIAL (가이드 문서화 완료 / 규칙 수치는 회의 안건) |
 | [ADR-0027](decisions/ADR-0027-touch-limit-rally-gate.md) | 터치 제한도 `isRallyLive()`를 쓰도록 통일 | **OPEN (미착수)** |
+| [ADR-0028](decisions/ADR-0028-bot-source-from-registry.md) | 봇 코드 입력 방식 (텍스트 붙여넣기 → 파일 레지스트리) | RESOLVED |
 
 *(ADR-0020은 충전 규칙만 확정이고 스킬 효과·소모량·봇 프로토콜 확장·사람 발동키는 아직 OPEN입니다 —
 회의 안건. 원래 `feature/5-gauge-system`에서 ADR-0019로 등재됐다가, 같은 번호를 RATIO 결정이 먼저
 `develop`에 머지하며 점유해서 절차대로 0020으로 옮긴 것입니다.
+ADR-0028도 같은 사유로 번호가 바뀌었습니다 — `develop`에서 0020으로 등재됐는데 `develop-skill`이
+이미 0020~0027을 쓰고 있어, 이 병합에서 위 절차대로 다음 빈 번호인 0028로 옮겼습니다.
 새로 발견되는 미확정 사항은 위 절차대로 새 ADR 파일을 만들고 여기 추가하세요.)*

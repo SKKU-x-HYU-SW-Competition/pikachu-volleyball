@@ -3,5 +3,6 @@
 # be silently reformatted by prettier -- variable names, indentation, and
 # any intentional idioms should ship exactly as written.
 # Kept in sync with .eslintrc.json's ignorePatterns.
+src/code-here/**
 src/resources/js/code/**
 src/resources/code/**

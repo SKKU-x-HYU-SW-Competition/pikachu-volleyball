@@ -159,8 +159,9 @@ SkillTypeForPlayer2Available.length : SkillTypeForPlayer1Available.length`
   phase/frame 카운터를 두고 몇 틱에 걸쳐 `{x,y,hit}`을 순서대로 반환하면 됨. 엔진/프로토콜 변경 전혀
   없음 — 참가자 각자의 전략 영역.
 - **공용 참고 라이브러리 제공** — `ServeMachine`처럼 `actionType`/포뮬러 배열/step 인터프리터를
-  `bot/` 밑에 참고용 헬퍼로 만들어 [`exampleBots.js`](../../src/resources/js/bot/exampleBots.js)처럼
-  제공. 역시 엔진/프로토콜 변경 없음, 참가자가 참고만 하거나 그대로 가져다 써도 됨.
+  참고용 헬퍼로 만들어 [`src/code-here/Example_v1.js`](../../src/code-here/Example_v1.js)와 같이
+  샘플 봇 파일로 제공. 역시 엔진/프로토콜 변경 없음, 참가자가 참고만 하거나 그대로 가져다 써도
+  됨.
 
 ### Tier B — 정말 새로운 물리 규칙이 필요한 스킬
 

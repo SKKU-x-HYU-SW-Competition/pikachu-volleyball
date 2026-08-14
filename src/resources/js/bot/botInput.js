@@ -222,6 +222,15 @@ export class PikaBotInput extends PikaUserInput {
     this.yDirection = this.latestAction.y;
     this.powerHit = this.latestAction.hit;
 
+    // Apply may have already called destroy() on us (e.g. re-Apply with a
+    // modified source tears down the old input before the new one finishes
+    // loading), but the ticker can still call getInput() while we're
+    // sitting in keyboardArray waiting to be swapped out. Bail before we
+    // touch this.worker.
+    if (this.worker === null) {
+      return;
+    }
+
     const meta = this.getMeta();
     const currentScoreTotal = meta.scores[0] + meta.scores[1];
     if (currentScoreTotal !== this.previousScoreTotal) {

@@ -84,9 +84,6 @@ export class PikachuVolleyball {
     /** @type {number} number of elapsed normal fps frames for rendering slow motion */
     this.slowMotionNumOfSkippedFrames = 0;
 
-    /** @type {number} 0: with computer, 1: with friend */
-    this.selectedWithWho = 0;
-
     /** @type {number[]} [0] for player 1 score, [1] for player 2 score */
     this.scores = [0, 0];
     /** @type {number} winning score: if either one of the players reaches this score, game ends */
@@ -112,13 +109,6 @@ export class PikachuVolleyball {
       afterEndOfRound: 5,
       beforeStartOfNextRound: 30,
       gameEnd: 211,
-    };
-
-    /** @type {number} counter for frames while there is no input from keyboard */
-    this.noInputFrameCounter = 0;
-    /** @type {Object.<string,number>} total number of frames to be rendered while there is no input */
-    this.noInputFrameTotal = {
-      menu: 225,
     };
 
     /** @type {boolean} true: paused, false: not paused */
@@ -220,15 +210,16 @@ export class PikachuVolleyball {
   }
 
   /**
-   * Menu: select who do you want to play. With computer? With friend?
+   * Menu: single "start" button. Power-hit key advances to the game (both
+   * players are always human -- the old with-computer/with-friend selection
+   * and the no-input auto-advance timeout have both been removed).
    * @type {GameState}
    */
   menu() {
     if (this.frameCounter === 0) {
       this.view.menu.visible = true;
       this.view.fadeInOut.setBlackAlphaTo(0);
-      this.selectedWithWho = 0;
-      this.view.menu.selectWithWho(this.selectedWithWho);
+      this.view.menu.selectWithWho();
     }
     this.view.menu.drawFightMessage(this.frameCounter);
     this.view.menu.drawPengsooMenuBackground(this.frameCounter);
@@ -251,55 +242,13 @@ export class PikachuVolleyball {
     }
 
     if (
-      (this.keyboardArray[0].yDirection === -1 ||
-        this.keyboardArray[1].yDirection === -1) &&
-      this.selectedWithWho === 1
-    ) {
-      this.noInputFrameCounter = 0;
-      this.selectedWithWho = 0;
-      this.view.menu.selectWithWho(this.selectedWithWho);
-      this.audio.sounds.pi.play();
-    } else if (
-      (this.keyboardArray[0].yDirection === 1 ||
-        this.keyboardArray[1].yDirection === 1) &&
-      this.selectedWithWho === 0
-    ) {
-      this.noInputFrameCounter = 0;
-      this.selectedWithWho = 1;
-      this.view.menu.selectWithWho(this.selectedWithWho);
-      this.audio.sounds.pi.play();
-    } else {
-      this.noInputFrameCounter++;
-    }
-
-    if (
       this.keyboardArray[0].powerHit === 1 ||
       this.keyboardArray[1].powerHit === 1
     ) {
-      if (this.selectedWithWho === 1) {
-        this.physics.player1.isComputer = false;
-        this.physics.player2.isComputer = false;
-      } else {
-        if (this.keyboardArray[0].powerHit === 1) {
-          this.physics.player1.isComputer = false;
-          this.physics.player2.isComputer = true;
-        } else if (this.keyboardArray[1].powerHit === 1) {
-          this.physics.player1.isComputer = true;
-          this.physics.player2.isComputer = false;
-        }
-      }
+      this.physics.player1.isComputer = false;
+      this.physics.player2.isComputer = false;
       this.audio.sounds.pikachu.play();
       this.frameCounter = 0;
-      this.noInputFrameCounter = 0;
-      this.state = this.afterMenuSelection;
-      return;
-    }
-
-    if (this.noInputFrameCounter >= this.noInputFrameTotal.menu) {
-      this.physics.player1.isComputer = true;
-      this.physics.player2.isComputer = true;
-      this.frameCounter = 0;
-      this.noInputFrameCounter = 0;
       this.state = this.afterMenuSelection;
     }
   }
@@ -553,7 +502,6 @@ export class PikachuVolleyball {
    */
   restart() {
     this.frameCounter = 0;
-    this.noInputFrameCounter = 0;
     this.slowMotionFramesLeft = 0;
     this.slowMotionNumOfSkippedFrames = 0;
     this.view.menu.visible = false;

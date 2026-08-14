@@ -255,6 +255,8 @@
         </div>
       </div>
       <div id="game-canvas-container">
+        <div id="team-label-left" class="team-label team-label-left"></div>
+        <div id="team-label-right" class="team-label team-label-right"></div>
         <div class="fade-in-box about" id="about-box">
           <div id="about-box-head">
             <h1>피카츄 배구</h1>
@@ -409,10 +411,12 @@
         <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
           <h1>봇 테스트 설정</h1>
           <p class="small">
-            왼쪽/오른쪽 진영을 각각 독립적으로 키보드, 내 봇 코드
-            (JavaScript 또는 Python), 기본 탑재 AI 중 하나로 정할 수
-            있습니다. 설정은 "적용"을 눌러야 반영되며, 이때 게임이
-            재시작됩니다.
+            왼쪽/오른쪽 진영을 각각 독립적으로 키보드, 봇 코드,
+            기본 탑재 AI 중 하나로 정할 수 있습니다. 봇 코드는
+            <code>src/code-here/</code> 폴더에 파일명
+            <code>&lt;팀명&gt;_v&lt;버전&gt;.js|py</code> 규약으로 미리
+            넣어두면 아래 드롭다운에 자동으로 나타납니다. 설정은
+            "적용"을 눌러야 반영되며, 이때 게임이 재시작됩니다.
           </p>
           <div class="bot-setup-columns">
             <div class="bot-setup-side">
@@ -428,23 +432,13 @@
                   <span class="check">&check; </span>기본 AI
                 </button>
               </div>
-              <p class="bot-setup-language-label">언어 (봇 코드 선택 시 적용):</p>
-              <div class="bot-setup-language-group" id="bot-setup-left-language">
-                <button type="button" class="btn selected" data-language="js">
-                  <span class="check">&check; </span>JavaScript
-                </button>
-                <button type="button" class="btn" data-language="py">
-                  <span class="check">&check; </span>Python
-                </button>
-              </div>
-              <textarea
-                id="bot-setup-left-source"
-                class="bot-setup-textarea"
-                placeholder="여기에 봇 코드를 붙여넣으세요 (decide(snapshot) 함수를 정의해야 함)"
-              ></textarea>
-              <button type="button" id="bot-setup-left-example-btn" class="btn-in-box">
-                예제 봇 불러오기
-              </button>
+              <label class="bot-setup-select-label" for="bot-setup-left-bot">
+                봇 선택 (봇 코드 모드일 때 적용):
+              </label>
+              <select
+                id="bot-setup-left-bot"
+                class="bot-setup-select"
+              ></select>
               <p id="bot-setup-left-status" class="bot-setup-status"></p>
             </div>
             <div class="bot-setup-side">
@@ -460,23 +454,13 @@
                   <span class="check">&check; </span>기본 AI
                 </button>
               </div>
-              <p class="bot-setup-language-label">언어 (봇 코드 선택 시 적용):</p>
-              <div class="bot-setup-language-group" id="bot-setup-right-language">
-                <button type="button" class="btn selected" data-language="js">
-                  <span class="check">&check; </span>JavaScript
-                </button>
-                <button type="button" class="btn" data-language="py">
-                  <span class="check">&check; </span>Python
-                </button>
-              </div>
-              <textarea
-                id="bot-setup-right-source"
-                class="bot-setup-textarea"
-                placeholder="여기에 봇 코드를 붙여넣으세요 (decide(snapshot) 함수를 정의해야 함)"
-              ></textarea>
-              <button type="button" id="bot-setup-right-example-btn" class="btn-in-box">
-                예제 봇 불러오기
-              </button>
+              <label class="bot-setup-select-label" for="bot-setup-right-bot">
+                봇 선택 (봇 코드 모드일 때 적용):
+              </label>
+              <select
+                id="bot-setup-right-bot"
+                class="bot-setup-select"
+              ></select>
               <p id="bot-setup-right-status" class="bot-setup-status"></p>
             </div>
           </div>

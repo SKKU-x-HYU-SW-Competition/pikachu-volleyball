@@ -160,5 +160,6 @@ Bot Setup 패널([testSetup.js](../../src/resources/js/bot/testSetup.js))은 왼
 | [bot/botInput.js](../../src/resources/js/bot/botInput.js) | `PikaBotInput` — `PikaUserInput`을 상속하는 봇용 입력 클래스 |
 | [bot/botWorker.js](../../src/resources/js/bot/botWorker.js) | Worker 쪽에서 봇 코드를 로드/실행하는 실행기 |
 | [bot/nullInput.js](../../src/resources/js/bot/nullInput.js) | 기본 AI 진영용 무입력 플레이스홀더 |
-| [bot/exampleBots.js](../../src/resources/js/bot/exampleBots.js) | Bot Setup 패널의 "예시 코드 채우기" 버튼용 샘플 봇 소스 |
-| [bot/testSetup.js](../../src/resources/js/bot/testSetup.js) | 좌우 진영을 키보드/봇/기본AI로 설정하는 UI + `keyboardArray` 동기화 로직 |
+| [bot/botRegistry.js](../../src/resources/js/bot/botRegistry.js) | 빌드 시점에 `src/code-here/`를 스캔해 `<TeamName>_v<version>.<js\|py>` 파일 목록을 노출 (ADR-0028) |
+| [bot/testSetup.js](../../src/resources/js/bot/testSetup.js) | 좌우 진영을 키보드/봇/기본AI로 설정하는 UI + `keyboardArray` 동기화 로직. 봇 소스는 `botRegistry`에서 선택 |
+| [src/code-here/](../../src/code-here/) | 참가자 봇 코드 파일 저장소. 파일명 규약과 등록 원리는 폴더 내 `README.md` 참고 |
