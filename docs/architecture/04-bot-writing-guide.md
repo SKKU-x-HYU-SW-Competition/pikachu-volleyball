@@ -176,8 +176,8 @@ def decide(s):
   "meta":  { "score": { "self": 7, "opp": 6 }, "isPlayer2Serve": false, "rallyFrameCount": 42 },
   "config": {
     "tickFrameGroupSize": 3,
-    "gauge": { "min": 0, "max": 100, "onReceive": 10, "onExtraTouch": -5, "onServe": 0 },
-    "claw":  { "cost": 50, "width": 96, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
+    "gauge": { "min": 0, "max": 100, "onReceive": 15, "onExtraTouch": -5, "onServe": 0 },
+    "claw":  { "cost": 50, "width": 60, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
   }
 }
 ```
@@ -244,7 +244,7 @@ return {'x': 0, 'y': 0, 'hit': 0, 'skillX': 300}
 ```
 
 - **게이지 `config.claw.cost`(현재 50)** 를 소모한다. 지금 얼마 있는지는 `self.gauge`로 확인한다.
-- 발동하면 **1초 뒤** 그 x를 중심으로 폭 96px 기둥에 발톱이 생긴다. 그 순간 범위 안에 있는
+- 발동하면 **1초 뒤** 그 x를 중심으로 폭 `config.claw.width`(현재 60) 기둥에 발톱이 생긴다. 그 순간 범위 안에 있는
   플레이어는 **1초간 기절**(이동 불가)하고, 공중이었다면 즉시 땅으로 떨어진다.
 - **판정은 x축만 본다** — 그 x 범위 안이면 높이에 상관없이 맞는다. 점프로는 못 피하고, 예고 1초
   안에 좌우로 벗어나야 한다.
@@ -264,7 +264,7 @@ return {'x': 0, 'y': 0, 'hit': 0, 'skillX': 300}
 if (s.self.gauge >= s.config.claw.cost) { /* 발동 가능 */ }
 ```
 
-- `0 ~ config.gauge.max`(100) 범위. 상대에게서 넘어온 공을 처음 받으면 `config.gauge.onReceive`(+10),
+- `0 ~ config.gauge.max`(100) 범위. 상대에게서 넘어온 공을 처음 받으면 `config.gauge.onReceive`(+15),
   자기 진영에서 이어 치면 `config.gauge.onExtraTouch`(-5), 서브는 `config.gauge.onServe`(0)다.
   즉 **한 번에 깔끔하게 넘길수록 이득**이고, 경기 시작 시 0으로 리셋된다(랠리가 끝나도 유지).
 - `opp.gauge`도 보인다. 상대가 `config.claw.cost` 이상이면 언제든 맞을 수 있다는 뜻이다.
@@ -372,10 +372,46 @@ if (incoming && incoming.framesUntilStrike > 0) {
 ```
 [LEFT check] tick=75 | ERRORS=0 | gauge=50(seen 0~100) opp=30 | castsRequested=2
   ownClawTicks=18 incomingClawTicks=12 | strikesAtMe=3 (stunned 1 / dodged 2)
-  stunTicks=9 | cfg cost=50 width=96 warn=25 stun=25
+  stunTicks=9 | cfg cost=50 width=60 warn=25 stun=25
 ```
 
 양쪽에 각각 붙여 봇 vs 봇으로 돌리면 발동·회피 경로가 전부 지나간다.
+
+### 6.6 발톱 조준 비교형 (JS 2종) — 스킬을 실제로 굴려보는 예시
+
+파일: [`claw_landing_point_bot.js`](../agent-dev/example-bots/claw_landing_point_bot.js) /
+[`claw_opponent_position_bot.js`](../agent-dev/example-bots/claw_opponent_position_bot.js).
+
+**한 쌍으로 만든 대조 실험이다.** 두 파일은 주석을 빼고 나면 실행 코드가 **딱 한 줄** 다르다 —
+맨 아래 `aimX()`의 `return` 한 줄. 포지셔닝·점프·스매시·회피·발동 타이밍까지 전부 공유하므로,
+둘을 붙여 돌렸을 때 생기는 차이는 오직 "발톱을 어디에 쏘는가"에서만 온다.
+
+- **1번(`landing_point`)**: 공이 **떨어질 지점**을 노린다. 발톱은 터지는 데 `warningFrames`(25프레임
+  = 1초)가 걸리므로 "지금 상대가 서 있는 자리"는 1초 뒤엔 빈 자리다. 그래서 공의 남은 비행시간이
+  그 1초와 맞아떨어지는 순간에만 발동해서, **상대가 리시브하려면 반드시 서야 하는 자리**와 발톱이
+  터지는 시점을 일치시킨다.
+- **2번(`opponent_position`)**: `opp.x`를 그대로 노린다. 키보드 발동과 같은 규칙이고, 리드를 전혀
+  주지 않는 대조군이다.
+
+봇 vs 봇으로 붙여 계측하면 **1번 49발 49명중(100%) / 2번 40발 32명중(80%)** 이 나온다. 리드 사격이
+왜 필요한지 숫자로 보고 싶을 때 이 둘을 양쪽에 붙여보면 된다.
+
+전략과 별개로, **엔진을 안 읽으면 알기 어려운 사실 세 가지**가 이 코드에 들어있다. 스매시가 자꾸
+안 넘어가면 여기부터 의심하는 게 빠르다.
+
+1. **파워히트의 `x`/`y`는 공을 좌우로 조준하는 값이 아니다.** `x`는 **속도만** 정하고(`(|x|+1)*10`),
+   좌우 방향은 **공이 네트 어느 쪽에 있는지**로 엔진이 결정한다. `y`는 현재 수직속도를 2배 하고
+   부호를 정한다(-1 띄움 / 0 평평 / 1 내리꽂음). 그래서 "네트에 가까우면 y=1" 같은 어림짐작은 잘
+   맞지 않는다. 예시 봇은 엔진의 `expectedLandingPointXWhenPowerHit()`를 그대로 이식해서 6개 조합의
+   착지점을 **직접 시뮬레이션한 뒤** 고른다.
+2. **`hit=1`은 점프하는 동안 계속 들고 있는 게 낫다.** 파워히트로 판정되는 조건은 "공이 충돌한
+   프레임에 내가 파워히트 상태였는가"이고, 그 상태는 약 10프레임 뒤 자동으로 풀렸다가 입력을 들고
+   있으면 즉시 다시 들어간다. 반대로 "공이 사거리에 들어오면 친다"로 짜면 **거의 못 친다** — 사거리
+   폭을 공이 한 틱이면 지나가는데 스냅샷은 이미 한 틱 낡았기 때문이다. 실측으로 공중 267프레임 중
+   사거리 안은 42프레임뿐이었다.
+3. **자기 진영 5회 터치 제한이 전략을 바꾼다.** 원작 기본 AI는 "확실한 조합이 없으면 아예 안 친다"인데,
+   이 빌드에는 한 진영이 공을 5번 만지면 상대 득점인 규칙이 있다. 그래서 이 예시 봇들은 조건을
+   완화해서 **상대 코트에 떨어지기만 하면 상대 근처라도 친다.** 안 치고 버티면 그대로 실점이다.
 
 ## 7. 자주 막히는 지점
 

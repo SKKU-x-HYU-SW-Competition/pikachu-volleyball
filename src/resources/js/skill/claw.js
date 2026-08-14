@@ -24,7 +24,7 @@ export const CLAW_COST = 50;
  * it cannot be dodged at all. First knob to tune after real matches.
  * @constant @type {number}
  */
-export const CLAW_WIDTH = 96;
+export const CLAW_WIDTH = 60;
 
 /**
  * The claw covers **every y** inside its x range: there is no vertical dodge,
