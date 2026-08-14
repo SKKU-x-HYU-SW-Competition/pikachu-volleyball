@@ -49,5 +49,6 @@
 | [ADR-0017](decisions/ADR-0017-python-execution-failure.md) | Python 봇 실행 실패 처리 (D-002 확장) | RESOLVED |
 | [ADR-0018](decisions/ADR-0018-python-library-scope.md) | Python 봇 사용 가능 라이브러리 범위 (표준 + numpy) | RESOLVED |
 | [ADR-0019](decisions/ADR-0019-asset-resolution-ratio.md) | 에셋 해상도 스케일링 배율 (RATIO) | RESOLVED |
+| [ADR-0020](decisions/ADR-0020-bot-source-from-registry.md) | 봇 코드 입력 방식 (텍스트 붙여넣기 → 파일 레지스트리) | RESOLVED |
 
 *(새로 발견되는 미확정 사항은 위 절차대로 새 ADR 파일을 만들고 여기 추가하세요.)*

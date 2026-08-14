@@ -5,7 +5,7 @@
     "es6": true,
     "node": true
   },
-  "ignorePatterns": ["src/resources/js/code/**", "src/resources/code/**"],
+  "ignorePatterns": ["src/code-here/**", "src/resources/js/code/**", "src/resources/code/**"],
   "extends": "eslint:recommended",
   "globals": {
     "Atomics": "readonly",

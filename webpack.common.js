@@ -22,6 +22,23 @@ module.exports = {
       chunks: 'all',
     },
   },
+  module: {
+    rules: [
+      // Bot source files under src/code-here/ ship as raw text, NOT as
+      // parsed modules -- their contents are handed to a Worker as a
+      // string and evaluated there (see botWorker.js / botWorkerPython.js).
+      // asset/source overrides webpack's default JS handling for anything
+      // that lands in this directory, so a participant can drop in a plain
+      // top-level `function decide(...)` file without ESM boilerplate. The
+      // registry (src/resources/js/bot/botRegistry.js) picks these up via
+      // require.context. See ADR-0020.
+      {
+        test: /\.(js|py)$/,
+        include: path.resolve(__dirname, 'src/code-here'),
+        type: 'asset/source',
+      },
+    ],
+  },
   plugins: [
     new CleanWebpackPlugin(),
     new CopyPlugin({

@@ -257,6 +257,8 @@
         </div>
       </div>
       <div id="game-canvas-container">
+        <div id="team-label-left" class="team-label team-label-left"></div>
+        <div id="team-label-right" class="team-label team-label-right"></div>
         <div class="fade-in-box about" id="about-box">
           <div id="about-box-head">
             <h1>Pikachu Volleyball</h1>
@@ -411,9 +413,11 @@
         <div class="fade-in-box bot-setup hidden" id="bot-setup-box">
           <h1>Bot Test Setup</h1>
           <p class="small">
-            Left / right side each independently: keyboard, your bot code
-            (JavaScript or Python), or the built-in AI. Settings apply after
-            you click Apply, which restarts the game.
+            Left / right side each independently: keyboard, bot code,
+            or the built-in AI. Bot code files are picked up automatically
+            from <code>src/code-here/</code> if their name follows
+            <code>&lt;team&gt;_v&lt;version&gt;.js|py</code>. Settings apply
+            after you click Apply, which restarts the game.
           </p>
           <div class="bot-setup-columns">
             <div class="bot-setup-side">
@@ -429,23 +433,13 @@
                   <span class="check">&check; </span>Built-in AI
                 </button>
               </div>
-              <p class="bot-setup-language-label">Language (applies when Bot code is selected):</p>
-              <div class="bot-setup-language-group" id="bot-setup-left-language">
-                <button type="button" class="btn selected" data-language="js">
-                  <span class="check">&check; </span>JavaScript
-                </button>
-                <button type="button" class="btn" data-language="py">
-                  <span class="check">&check; </span>Python
-                </button>
-              </div>
-              <textarea
-                id="bot-setup-left-source"
-                class="bot-setup-textarea"
-                placeholder="Paste bot code here (must define a decide(snapshot) function)"
-              ></textarea>
-              <button type="button" id="bot-setup-left-example-btn" class="btn-in-box">
-                Load example bot
-              </button>
+              <label class="bot-setup-select-label" for="bot-setup-left-bot">
+                Bot (used when Bot code mode is selected):
+              </label>
+              <select
+                id="bot-setup-left-bot"
+                class="bot-setup-select"
+              ></select>
               <p id="bot-setup-left-status" class="bot-setup-status"></p>
             </div>
             <div class="bot-setup-side">
@@ -461,23 +455,13 @@
                   <span class="check">&check; </span>Built-in AI
                 </button>
               </div>
-              <p class="bot-setup-language-label">Language (applies when Bot code is selected):</p>
-              <div class="bot-setup-language-group" id="bot-setup-right-language">
-                <button type="button" class="btn selected" data-language="js">
-                  <span class="check">&check; </span>JavaScript
-                </button>
-                <button type="button" class="btn" data-language="py">
-                  <span class="check">&check; </span>Python
-                </button>
-              </div>
-              <textarea
-                id="bot-setup-right-source"
-                class="bot-setup-textarea"
-                placeholder="Paste bot code here (must define a decide(snapshot) function)"
-              ></textarea>
-              <button type="button" id="bot-setup-right-example-btn" class="btn-in-box">
-                Load example bot
-              </button>
+              <label class="bot-setup-select-label" for="bot-setup-right-bot">
+                Bot (used when Bot code mode is selected):
+              </label>
+              <select
+                id="bot-setup-right-bot"
+                class="bot-setup-select"
+              ></select>
               <p id="bot-setup-right-status" class="bot-setup-status"></p>
             </div>
           </div>

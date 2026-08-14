@@ -248,19 +248,23 @@ def decide(s):
 
 완성된 예시가 이미 있다. 전략을 참고하거나 그대로 복사해서 시작점으로 써도 된다.
 
-### 6.1 추격형 JS 봇 (chase) — Bot Setup의 "Load example bot" 버튼(JS 선택 시)
+### 6.1 추격형 JS 봇 (chase) — Bot Setup 드롭다운의 `Example v1 (JS)`
 
-파일: [`bot/exampleBots.js`](../../src/resources/js/bot/exampleBots.js) (`CHASE_BOT_SOURCE`).
+파일: [`src/code-here/Example_v1.js`](../../src/code-here/Example_v1.js).
 `ball.expectedLandingPointX`를 쫓아가다가, 점프해서 닿을 수 있으면 파워히트를 시도한다. 네트에
 가까우면 급강하 스매시(`y=1`), 멀면 아치형으로 넘기는 못박기(`y=-1`)를 고른다. `tickCounter` 변수로
 20틱마다 한 번씩 상태를 `console.log`로 찍는 디버깅 예시도 포함.
 
-### 6.2 추격형 Python 봇 — Bot Setup의 "Load example bot" 버튼(Python 선택 시)
+### 6.2 추격형 Python 봇 — Bot Setup 드롭다운의 `Example v1 (PY)`
 
-파일: [`bot/exampleBots.js`](../../src/resources/js/bot/exampleBots.js) (`CHASE_BOT_SOURCE_PY`).
+파일: [`src/code-here/Example_v1.py`](../../src/code-here/Example_v1.py).
 6.1의 파이썬 포팅. 같은 전략(추격 → 점프 → 위치에 따른 스매시 각도)이며, `tick_counter`, `f-string`,
 `global` 선언 등 파이썬 관용 표현으로 다시 짠 버전. JS와 Python 코드를 나란히 비교하고 싶을 때
 좋은 시작점.
+
+> 봇 등록 방식(파일명 규약, 폴더 위치, UI 흐름)은 ADR-0020과 `src/code-here/README.md` 참고.
+> 예전에는 Bot Setup 패널의 textarea에 소스를 직접 붙여넣고 "예제 봇 불러오기" 버튼이 위 두
+> 파일 내용을 채워주는 방식이었지만, 지금은 드롭다운으로 파일을 선택하는 방식으로 바뀌었다.
 
 ### 6.3 논힛(no-hit) 포지셔닝형
 

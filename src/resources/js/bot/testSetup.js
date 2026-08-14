@@ -4,11 +4,9 @@
  * try any combination -- my bot vs my own keyboard, my bot vs the built-in
  * AI, bot vs bot, etc. Replaces the Phase 1 devBotHook.js query-param hack.
  *
- * Phase 5 (docs/agent-dev/PHASES.md Phase 5, ADR-0012~0018) adds a
- * per-side language selector (JavaScript | Python) so the same "bot"
- * mode can run either a JS `decide()` or a Python `decide()` -- the
- * PikaBotInput picks the right Worker script from its `language`
- * argument (see botInput.js).
+ * Phase 5 (docs/agent-dev/PHASES.md Phase 5, ADR-0012~0018) adds
+ * Python `decide()` alongside JavaScript. The PikaBotInput picks the right
+ * Worker script from its `language` argument (see botInput.js).
  *
  * Phase 5 B refactor (loading pre-warm): PikaBotInput now lives across
  * intro/menu/round transitions of the same Apply. It is created (and its
@@ -18,7 +16,12 @@
  * still swaps the input into/out of keyboardArray at round boundaries
  * (menu navigation still needs a real keyboard, ADR-0011), but no longer
  * destroys the input on the way out. Only a new Apply with a *different*
- * config (mode / language / source) tears the input down and rebuilds it.
+ * config (mode / bot id) tears the input down and rebuilds it.
+ *
+ * Post-ADR-0020 refactor: bot source no longer comes from a textarea. The
+ * dropdown is populated from botRegistry (build-time scan of
+ * src/code-here/), and per-side state is just {mode, botId}. Language is
+ * derived from the selected file's extension, not chosen separately.
  *
  * Design notes:
  * - "keyboard" mode is left completely alone (no isComputer/keyboardArray
@@ -46,16 +49,14 @@
 import { PikaKeyboard } from '../keyboard.js';
 import { PikaBotInput } from './botInput.js';
 import { NullInput } from './nullInput.js';
-import { CHASE_BOT_SOURCE, CHASE_BOT_SOURCE_PY } from '../code/exampleBots.js';
+import { listBots, getBotById } from './botRegistry.js';
 import { BOT_LANGUAGE } from './botContract.js';
 import { localStorageWrapper } from '../utils/local_storage_wrapper.js';
 
 /** @typedef {'keyboard'|'bot'|'ai'} SideMode */
-/** @typedef {'js'|'py'} SideLanguage */
-/** @typedef {{mode: SideMode, source: string, language: SideLanguage}} SideConfig */
+/** @typedef {{mode: SideMode, botId: string}} SideConfig */
 
 const DEFAULT_MODE = 'keyboard';
-const DEFAULT_LANGUAGE = BOT_LANGUAGE.JS;
 
 /**
  * Absolute ceiling on how long we'll keep the "환경 세팅 중" modal open
@@ -68,13 +69,11 @@ const INIT_TIMEOUT_MS = 60000;
 const STORAGE_KEYS = {
   left: {
     mode: 'pv-bot-left-mode',
-    source: 'pv-bot-left-source',
-    language: 'pv-bot-left-language',
+    botId: 'pv-bot-left-bot-id',
   },
   right: {
     mode: 'pv-bot-right-mode',
-    source: 'pv-bot-right-source',
-    language: 'pv-bot-right-language',
+    botId: 'pv-bot-right-bot-id',
   },
 };
 
@@ -101,11 +100,8 @@ export function setUpBotTestUI(pikaVolley, ticker) {
   // .physics.player2.x), same as the old devBotHook.js did.
   window.__pikaVolley = pikaVolley;
 
-  // Typing bot code (which is full of letters like z/d/g/r/v/f) must not
-  // leak into the game's window-level key listeners (PikaKeyboard), or
-  // typing would both insert garbage *and* move players / trigger hits.
-  els.box.addEventListener('keydown', (event) => event.stopPropagation());
-  els.box.addEventListener('keyup', (event) => event.stopPropagation());
+  const bots = listBots();
+  populateBotOptions(els, bots);
 
   /**
    * PikaBotInputs currently owned by this module. Lifetime is
@@ -122,8 +118,12 @@ export function setUpBotTestUI(pikaVolley, ticker) {
   let appliedConfig = null;
 
   /** UI config -- what the panel currently shows, may differ from appliedConfig. */
-  let config = loadConfig();
+  let config = loadConfig(bots);
   populateUI(els, config);
+  // Team labels intentionally stay blank until the first Apply -- on page
+  // load no bot is actually loaded yet (the panel's saved state is a
+  // *pending* config, not a running one), so showing team names then
+  // would mislead viewers into thinking the bots are already on court.
 
   // See file header for match-boundary logic rationale.
   const isDuringMatch = () =>
@@ -150,6 +150,18 @@ export function setUpBotTestUI(pikaVolley, ticker) {
       uninstallForMenuNavigation(pikaVolley);
       isConfigApplied = false;
     }
+    // Team labels are driven directly off duringMatch, NOT off the
+    // transition edges above -- otherwise re-Applying mid-match leaves the
+    // previous team's labels visible on the intro screen: Apply flips
+    // isConfigApplied to false while state is still `round`, then restart()
+    // switches state to intro, so the `!duringMatch && isConfigApplied`
+    // branch never fires and no one clears the labels. Setting textContent
+    // to the same value every tick is cheap (the browser diffs).
+    if (duringMatch) {
+      updateTeamLabels(appliedConfig);
+    } else {
+      clearTeamLabels();
+    }
   };
   ticker.add(syncWithGameState);
 
@@ -174,35 +186,19 @@ export function setUpBotTestUI(pikaVolley, ticker) {
         setBotFieldsEnabled(els, side, btn.dataset.mode);
       });
     });
-    if (els[side].languageGroup) {
-      Array.from(els[side].languageGroup.children).forEach((btn) => {
-        btn.addEventListener('click', () => {
-          config = Object.assign({}, config, {
-            [side]: Object.assign({}, config[side], {
-              language: btn.dataset.language,
-            }),
-          });
-          setSelectedLanguageBtn(els, side, btn.dataset.language);
-        });
+    els[side].botSelect.addEventListener('change', () => {
+      config = Object.assign({}, config, {
+        [side]: Object.assign({}, config[side], {
+          botId: els[side].botSelect.value,
+        }),
       });
-    }
-    els[side].exampleBtn.addEventListener('click', () => {
-      // Language field reflects the *currently selected* radio button, not
-      // the last-saved config, so switching language + clicking the
-      // example button loads the corresponding language's example.
-      els[side].source.value =
-        config[side].language === BOT_LANGUAGE.PY
-          ? CHASE_BOT_SOURCE_PY
-          : CHASE_BOT_SOURCE;
     });
   });
 
   els.applyBtn.addEventListener('click', async () => {
     const newConfig = {
-      left: Object.assign({}, config.left, { source: els.left.source.value }),
-      right: Object.assign({}, config.right, {
-        source: els.right.source.value,
-      }),
+      left: Object.assign({}, config.left),
+      right: Object.assign({}, config.right),
     };
     config = newConfig;
     saveConfig(newConfig);
@@ -226,6 +222,19 @@ export function setUpBotTestUI(pikaVolley, ticker) {
     const sidesToBuild = ['left', 'right'].filter(
       (side) => newConfig[side].mode === 'bot' && activeBotInputs[side] === null
     );
+
+    // Sanity-check that every "bot" side has a valid botId. A stale
+    // localStorage value (file since deleted) or a user who never picked
+    // one from the dropdown shows up here.
+    const missingBot = sidesToBuild.filter(
+      (side) => getBotById(newConfig[side].botId) === null
+    );
+    if (missingBot.length > 0) {
+      missingBot.forEach((side) => {
+        setStatus(els, side, '에러: 봇을 선택하세요');
+      });
+      return;
+    }
 
     if (sidesToBuild.length === 0) {
       // Nothing to load -- straight to restart.
@@ -255,6 +264,7 @@ export function setUpBotTestUI(pikaVolley, ticker) {
 
     appliedConfig = newConfig;
     isConfigApplied = false;
+    updateTeamLabels(newConfig);
     pikaVolley.restart();
   });
 }
@@ -276,6 +286,7 @@ export function setUpBotTestUI(pikaVolley, ticker) {
  * @return {Promise<PikaBotInput>}
  */
 function createBotInputAsync(pikaVolley, side, sideConfig, els) {
+  const bot = getBotById(sideConfig.botId);
   return new Promise((resolve) => {
     let settled = false;
     const finish = (ret) => {
@@ -303,10 +314,10 @@ function createBotInputAsync(pikaVolley, side, sideConfig, els) {
         scores: pikaVolley.scores,
         isPlayer2Serve: pikaVolley.isPlayer2Serve,
       }),
-      botSource: sideConfig.source,
-      language: sideConfig.language,
+      botSource: bot.source,
+      language: bot.language,
       onInitResult: (event) => {
-        setStatus(els, side, initPhaseToStatus(sideConfig.language, event));
+        setStatus(els, side, initPhaseToStatus(bot.language, event));
         if (event.phase === 'ok' || event.phase === 'error') {
           finish(input);
         }
@@ -316,7 +327,7 @@ function createBotInputAsync(pikaVolley, side, sideConfig, els) {
     setStatus(
       els,
       side,
-      sideConfig.language === BOT_LANGUAGE.PY
+      bot.language === BOT_LANGUAGE.PY
         ? 'Python 러너 시작 중...'
         : '봇 로딩 중...'
     );
@@ -384,16 +395,14 @@ function uninstallForMenuNavigation(pikaVolley) {
 function sideConfigEqual(a, b) {
   if (a === b) return true;
   if (!a || !b) return false;
-  return (
-    a.mode === b.mode && a.source === b.source && a.language === b.language
-  );
+  return a.mode === b.mode && a.botId === b.botId;
 }
 
 /**
  * Translate an onInitResult event into a Korean status string. Python has
  * multi-phase progress (Pyodide load -> numpy load -> source exec -> ok);
  * JS has a single terminal event.
- * @param {SideLanguage} language
+ * @param {'js'|'py'} language
  * @param {{phase: string, ok: (boolean|undefined), error: (string|undefined)}} event
  * @return {string}
  */
@@ -419,11 +428,11 @@ function initPhaseToStatus(language, event) {
  */
 function showLoadingModal(els, sideCount, newConfig) {
   if (!els.loadingBox) return;
-  const anyPython = ['left', 'right'].some(
-    (side) =>
-      newConfig[side].mode === 'bot' &&
-      newConfig[side].language === BOT_LANGUAGE.PY
-  );
+  const anyPython = ['left', 'right'].some((side) => {
+    if (newConfig[side].mode !== 'bot') return false;
+    const bot = getBotById(newConfig[side].botId);
+    return bot !== null && bot.language === BOT_LANGUAGE.PY;
+  });
   if (els.loadingText) {
     els.loadingText.textContent = anyPython
       ? '봇 환경 세팅 중... Python 런타임 로딩이 몇 초 걸릴 수 있습니다.'
@@ -471,8 +480,9 @@ function createDefaultKeyboard(engineSide) {
  * @return {{
  *   openBtn: Element, box: Element, closeBtn: Element, applyBtn: Element,
  *   loadingBox: Element|null, loadingText: Element|null,
- *   left: {modeGroup: Element, languageGroup: Element|null, source: HTMLTextAreaElement, exampleBtn: Element, status: Element},
- *   right: {modeGroup: Element, languageGroup: Element|null, source: HTMLTextAreaElement, exampleBtn: Element, status: Element},
+ *   teamLabelLeft: Element|null, teamLabelRight: Element|null,
+ *   left: {modeGroup: Element, botSelect: HTMLSelectElement, status: Element},
+ *   right: {modeGroup: Element, botSelect: HTMLSelectElement, status: Element},
  * }|null}
  */
 function collectElements() {
@@ -483,9 +493,9 @@ function collectElements() {
   }
   const forSide = (side) => ({
     modeGroup: document.getElementById(`bot-setup-${side}-mode`),
-    languageGroup: document.getElementById(`bot-setup-${side}-language`),
-    source: document.getElementById(`bot-setup-${side}-source`),
-    exampleBtn: document.getElementById(`bot-setup-${side}-example-btn`),
+    botSelect: /** @type {HTMLSelectElement} */ (
+      document.getElementById(`bot-setup-${side}-bot`)
+    ),
     status: document.getElementById(`bot-setup-${side}-status`),
   });
   return {
@@ -495,21 +505,54 @@ function collectElements() {
     applyBtn: document.getElementById('bot-setup-apply-btn'),
     loadingBox: document.getElementById('bot-loading-box'),
     loadingText: document.getElementById('bot-loading-text'),
+    teamLabelLeft: document.getElementById('team-label-left'),
+    teamLabelRight: document.getElementById('team-label-right'),
     left: forSide('left'),
     right: forSide('right'),
   };
 }
 
 /**
+ * Fill both <select>s with an option per registry entry. A leading empty
+ * option keeps "no selection" representable so a stale-id case surfaces
+ * as a visible blank rather than silently picking a random bot.
+ * @param {ReturnType<typeof collectElements>} els
+ * @param {import('./botRegistry.js').BotEntry[]} bots
+ */
+function populateBotOptions(els, bots) {
+  ['left', 'right'].forEach((side) => {
+    const select = els[side].botSelect;
+    select.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = bots.length
+      ? '-- 봇 선택 --'
+      : '(src/code-here/에 파일 없음)';
+    select.appendChild(placeholder);
+    bots.forEach((bot) => {
+      const opt = document.createElement('option');
+      opt.value = bot.id;
+      opt.textContent = bot.displayLabel;
+      select.appendChild(opt);
+    });
+  });
+}
+
+/**
+ * @param {import('./botRegistry.js').BotEntry[]} bots
  * @return {{left: SideConfig, right: SideConfig}}
  */
-function loadConfig() {
-  const forSide = (side) => ({
-    mode: localStorageWrapper.get(STORAGE_KEYS[side].mode) || DEFAULT_MODE,
-    source: localStorageWrapper.get(STORAGE_KEYS[side].source) || '',
-    language:
-      localStorageWrapper.get(STORAGE_KEYS[side].language) || DEFAULT_LANGUAGE,
-  });
+function loadConfig(bots) {
+  const validIds = new Set(bots.map((b) => b.id));
+  const forSide = (side) => {
+    const savedId = localStorageWrapper.get(STORAGE_KEYS[side].botId) || '';
+    return {
+      mode: localStorageWrapper.get(STORAGE_KEYS[side].mode) || DEFAULT_MODE,
+      // Drop a stale id (file deleted since last visit) so the panel opens
+      // with the placeholder selected rather than a phantom entry.
+      botId: validIds.has(savedId) ? savedId : '',
+    };
+  };
   return { left: forSide('left'), right: forSide('right') };
 }
 
@@ -519,8 +562,7 @@ function loadConfig() {
 function saveConfig(config) {
   ['left', 'right'].forEach((side) => {
     localStorageWrapper.set(STORAGE_KEYS[side].mode, config[side].mode);
-    localStorageWrapper.set(STORAGE_KEYS[side].source, config[side].source);
-    localStorageWrapper.set(STORAGE_KEYS[side].language, config[side].language);
+    localStorageWrapper.set(STORAGE_KEYS[side].botId, config[side].botId);
   });
 }
 
@@ -529,35 +571,23 @@ function saveConfig(config) {
  * @param {{left: SideConfig, right: SideConfig}} config
  */
 function populateUI(els, config) {
-  els.left.source.value = config.left.source;
-  els.right.source.value = config.right.source;
+  els.left.botSelect.value = config.left.botId;
+  els.right.botSelect.value = config.right.botId;
   setSelectedModeBtn(els, 'left', config.left.mode);
   setSelectedModeBtn(els, 'right', config.right.mode);
-  setSelectedLanguageBtn(els, 'left', config.left.language);
-  setSelectedLanguageBtn(els, 'right', config.right.language);
   setBotFieldsEnabled(els, 'left', config.left.mode);
   setBotFieldsEnabled(els, 'right', config.right.mode);
 }
 
 /**
- * Enable the language buttons, source textarea, and example button only for
- * "bot" mode; disable them for "keyboard"/"ai" so it's visually obvious those
- * fields are irrelevant. `button:disabled` in style.css already grays out the
- * buttons; textarea gets its subtle fade from .bot-setup-textarea:disabled.
+ * Enable the bot dropdown only for "bot" mode; disable it for
+ * "keyboard"/"ai" so it's visually obvious the selection is irrelevant.
  * @param {ReturnType<typeof collectElements>} els
  * @param {'left'|'right'} side
  * @param {SideMode} mode
  */
 function setBotFieldsEnabled(els, side, mode) {
-  const enabled = mode === 'bot';
-  const sideEls = els[side];
-  sideEls.source.disabled = !enabled;
-  sideEls.exampleBtn.disabled = !enabled;
-  if (sideEls.languageGroup) {
-    Array.from(sideEls.languageGroup.children).forEach((btn) => {
-      btn.disabled = !enabled;
-    });
-  }
+  els[side].botSelect.disabled = mode !== 'bot';
 }
 
 /**
@@ -574,20 +604,41 @@ function setSelectedModeBtn(els, side, mode) {
 /**
  * @param {ReturnType<typeof collectElements>} els
  * @param {'left'|'right'} side
- * @param {SideLanguage} language
- */
-function setSelectedLanguageBtn(els, side, language) {
-  if (!els[side].languageGroup) return; // markup may be absent in some locales
-  Array.from(els[side].languageGroup.children).forEach((btn) => {
-    btn.classList.toggle('selected', btn.dataset.language === language);
-  });
-}
-
-/**
- * @param {ReturnType<typeof collectElements>} els
- * @param {'left'|'right'} side
  * @param {string} text
  */
 function setStatus(els, side, text) {
   els[side].status.textContent = text;
+}
+
+// Team-label helpers don't need `els` -- they reach the overlay divs
+// directly by id so they work regardless of whether the setup box has
+// been opened. If the markup is missing (older localized template),
+// silently skip: the labels are purely informational.
+/**
+ * @param {{left: SideConfig, right: SideConfig}} config
+ */
+function updateTeamLabels(config) {
+  const leftEl = document.getElementById('team-label-left');
+  const rightEl = document.getElementById('team-label-right');
+  if (leftEl) leftEl.textContent = describeSide(config.left);
+  if (rightEl) rightEl.textContent = describeSide(config.right);
+}
+
+function clearTeamLabels() {
+  const leftEl = document.getElementById('team-label-left');
+  const rightEl = document.getElementById('team-label-right');
+  if (leftEl) leftEl.textContent = '';
+  if (rightEl) rightEl.textContent = '';
+}
+
+/**
+ * @param {SideConfig} side
+ * @return {string}
+ */
+function describeSide(side) {
+  if (side.mode === 'keyboard') return '';
+  if (side.mode === 'ai') return '기본 AI';
+  const bot = getBotById(side.botId);
+  if (!bot) return '';
+  return `${bot.team} v${bot.version}`;
 }
