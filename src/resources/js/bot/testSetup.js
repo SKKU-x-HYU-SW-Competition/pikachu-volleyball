@@ -162,7 +162,7 @@ export function setUpBotTestUI(pikaVolley, ticker, getSkillState) {
     // branch never fires and no one clears the labels. Setting textContent
     // to the same value every tick is cheap (the browser diffs).
     if (duringMatch) {
-      updateTeamLabels(appliedConfig);
+      updateTeamLabels(appliedConfig, pikaVolley.scores);
     } else {
       clearTeamLabels();
     }
@@ -272,7 +272,7 @@ export function setUpBotTestUI(pikaVolley, ticker, getSkillState) {
 
     appliedConfig = newConfig;
     isConfigApplied = false;
-    updateTeamLabels(newConfig);
+    updateTeamLabels(newConfig, pikaVolley.scores);
     pikaVolley.restart();
   });
 }
@@ -626,12 +626,25 @@ function setStatus(els, side, text) {
 // silently skip: the labels are purely informational.
 /**
  * @param {{left: SideConfig, right: SideConfig}} config
+ * @param {number[]} scores [0] player 1, [1] player 2 -- a label sits right
+ *   next to its own score, and a score board is twice as wide once it needs
+ *   a tens digit (view.js drawScoresToScoreBoards), so the label has to step
+ *   aside for it. The `wide` class carries the wider offset.
  */
-function updateTeamLabels(config) {
+function updateTeamLabels(config, scores) {
+  // Same "labels are purely informational, never break the game over them"
+  // stance as the missing-markup check below.
+  const safeScores = scores || [0, 0];
   const leftEl = document.getElementById('team-label-left');
   const rightEl = document.getElementById('team-label-right');
-  if (leftEl) leftEl.textContent = describeSide(config.left);
-  if (rightEl) rightEl.textContent = describeSide(config.right);
+  if (leftEl) {
+    leftEl.textContent = describeSide(config.left);
+    leftEl.classList.toggle('wide', safeScores[0] >= 10);
+  }
+  if (rightEl) {
+    rightEl.textContent = describeSide(config.right);
+    rightEl.classList.toggle('wide', safeScores[1] >= 10);
+  }
 }
 
 function clearTeamLabels() {
