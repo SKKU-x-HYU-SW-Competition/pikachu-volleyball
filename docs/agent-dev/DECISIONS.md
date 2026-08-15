@@ -58,6 +58,7 @@
 | [ADR-0026](decisions/ADR-0026-touch-limit-vs-smash-logic.md) | 5회 터치 제한과 원작 AI의 "확실할 때만 스매시" 로직 충돌 | PARTIAL (가이드 문서화 완료 / 규칙 수치는 회의 안건) |
 | [ADR-0027](decisions/ADR-0027-touch-limit-rally-gate.md) | 터치 제한도 `isRallyLive()`를 쓰도록 통일 | **OPEN (미착수)** |
 | [ADR-0028](decisions/ADR-0028-bot-source-from-registry.md) | 봇 코드 입력 방식 (텍스트 붙여넣기 → 파일 레지스트리) | RESOLVED |
+| [ADR-0029](decisions/ADR-0029-pyodide-null-conversion.md) | Pyodide가 JS `null`을 `JsNull`로 바꿔 Python 봇이 마비되는 문제 | **OPEN (미착수)** |
 
 *(ADR-0020은 충전 규칙만 확정이고 스킬 효과·소모량·봇 프로토콜 확장·사람 발동키는 아직 OPEN입니다 —
 회의 안건. 원래 `feature/5-gauge-system`에서 ADR-0019로 등재됐다가, 같은 번호를 RATIO 결정이 먼저
