@@ -18,18 +18,26 @@ export const GAUGE_INITIAL = 0;
 
 /**
  * Gained when receiving a ball that came from the opponent, i.e. the first
- * touch after the other player touched it. Ten clean one-touch returns fill
+ * touch after the other player touched it. Five clean one-touch returns fill
  * the gauge.
  * @constant @type {number}
  */
-export const GAUGE_ON_RECEIVE = 15;
+export const GAUGE_ON_RECEIVE = 20;
 
 /**
- * Applied when touching the ball again on one's own side instead of sending it
- * over. Makes a two-touch return worth +5 net, three-touch 0, four-touch -5.
+ * Applied on top of the touch value when that touch is a power hit -- a smash.
+ * The engine flags one on the ball itself (`ball.isPowerHit`, physics.js:708-727:
+ * true only when the hitter was in `playerState === 2` at the moment of
+ * collision), so no engine change is needed to see it.
+ *
+ * This makes the gauge a choice rather than a by-product: a smash is the
+ * strongest return in the game, so paying for it means a player who spikes
+ * every ball never banks a skill, while one who returns softly builds toward
+ * a claw. Note it stacks with the touch value above -- receiving *and*
+ * smashing in one touch nets GAUGE_ON_RECEIVE + GAUGE_ON_SMASH.
  * @constant @type {number}
  */
-export const GAUGE_ON_EXTRA_TOUCH = -5;
+export const GAUGE_ON_SMASH = -10;
 
 /**
  * Applied to the first contact of a rally (the serve). A serve is not a
@@ -51,7 +59,7 @@ export const GAUGE_SNAPSHOT_CONFIG = Object.freeze({
   min: GAUGE_MIN,
   max: GAUGE_MAX,
   onReceive: GAUGE_ON_RECEIVE,
-  onExtraTouch: GAUGE_ON_EXTRA_TOUCH,
+  onSmash: GAUGE_ON_SMASH,
   onServe: GAUGE_ON_SERVE,
 });
 
@@ -122,15 +130,23 @@ export class GaugeTracker {
   /**
    * Apply one ball contact by the given player.
    * @param {number} playerIndex 0 or 1
+   * @param {boolean} isSmash whether this contact was a power hit
    */
-  registerTouch(playerIndex) {
-    let delta;
+  registerTouch(playerIndex, isSmash) {
+    // Only the first touch after the opponent's -- the receive -- pays. A
+    // second touch on one's own side is worth nothing rather than costing
+    // gauge: the five-touch cap (rules/touchLimit.js) already punishes
+    // holding onto the ball, so charging for it twice was redundant.
+    let delta = 0;
     if (this.lastToucherIndex === null) {
       delta = GAUGE_ON_SERVE;
-    } else if (this.lastToucherIndex === playerIndex) {
-      delta = GAUGE_ON_EXTRA_TOUCH;
-    } else {
+    } else if (this.lastToucherIndex !== playerIndex) {
       delta = GAUGE_ON_RECEIVE;
+    }
+    // Independent of which kind of touch it was, so a receive that is also a
+    // smash nets the two together.
+    if (isSmash) {
+      delta += GAUGE_ON_SMASH;
     }
     this.gauges[playerIndex] = clamp(this.gauges[playerIndex] + delta);
     this.lastToucherIndex = playerIndex;
@@ -163,10 +179,14 @@ export class GaugeTracker {
     }
 
     const players = [pikaVolley.physics.player1, pikaVolley.physics.player2];
+    // The engine rewrites ball.isPowerHit on every collision and nowhere else
+    // (physics.js:708-727), so read at the exact frame a contact begins it
+    // describes that contact.
+    const isSmash = pikaVolley.physics.ball.isPowerHit === true;
     for (let i = 0; i < 2; i++) {
       const isColliding = players[i].isCollisionWithBallHappened;
       if (isColliding && !this.previousCollisionFlags[i]) {
-        this.registerTouch(i);
+        this.registerTouch(i, isSmash);
       }
       this.previousCollisionFlags[i] = isColliding;
     }

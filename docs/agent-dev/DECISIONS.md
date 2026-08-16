@@ -59,6 +59,7 @@
 | [ADR-0027](decisions/ADR-0027-touch-limit-rally-gate.md) | 터치 제한도 `isRallyLive()`를 쓰도록 통일 | **OPEN (미착수)** |
 | [ADR-0028](decisions/ADR-0028-bot-source-from-registry.md) | 봇 코드 입력 방식 (텍스트 붙여넣기 → 파일 레지스트리) | RESOLVED |
 | [ADR-0029](decisions/ADR-0029-pyodide-null-conversion.md) | Pyodide가 JS `null`을 `JsNull`로 바꿔 Python 봇이 마비되는 문제 | **OPEN (미착수)** |
+| [ADR-0030](decisions/ADR-0030-gauge-charge-rework.md) | 게이지 충전 방식 개편 (연속 터치 페널티 폐지 → 스매시 비용) | **PROPOSED (시안, `develop-skill-v2`)** |
 
 *(ADR-0020은 충전 규칙만 확정이고 스킬 효과·소모량·봇 프로토콜 확장·사람 발동키는 아직 OPEN입니다 —
 회의 안건. 원래 `feature/5-gauge-system`에서 ADR-0019로 등재됐다가, 같은 번호를 RATIO 결정이 먼저

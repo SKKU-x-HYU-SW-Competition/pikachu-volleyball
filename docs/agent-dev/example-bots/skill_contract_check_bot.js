@@ -117,7 +117,7 @@ function checkConfig(c) {
   checkNumber('config.gauge.min', c.gauge.min, null, null);
   checkNumber('config.gauge.max', c.gauge.max, c.gauge.min + 1, null);
   checkNumber('config.gauge.onReceive', c.gauge.onReceive, null, null);
-  checkNumber('config.gauge.onExtraTouch', c.gauge.onExtraTouch, null, null);
+  checkNumber('config.gauge.onSmash', c.gauge.onSmash, null, null);
   checkNumber('config.gauge.onServe', c.gauge.onServe, null, null);
   checkNumber('config.claw.cost', c.claw.cost, 0, c.gauge.max);
   checkNumber('config.claw.width', c.claw.width, 1, GROUND_WIDTH);
@@ -223,10 +223,10 @@ function checkTransitions(s) {
     s.meta.rallyFrameCount > previous.meta.rallyFrameCount;
   if (rallyContinued) {
     var delta = s.self.gauge - previous.self.gauge;
-    var biggestStep = Math.max(
-      Math.abs(s.config.gauge.onReceive),
-      Math.abs(s.config.gauge.onExtraTouch)
-    );
+    // onSmash stacks on top of a touch value (CONTRACTS.md 1.2, D-030), so
+    // the largest single-touch swing is receive-and-smash, not either alone.
+    var biggestStep =
+      Math.abs(s.config.gauge.onReceive) + Math.abs(s.config.gauge.onSmash);
     // One tick spans several frames, so a touch and a cast can land together.
     if (delta < -(s.config.claw.cost + biggestStep)) {
       fail('gauge dropped by an undocumented amount: ' + delta);

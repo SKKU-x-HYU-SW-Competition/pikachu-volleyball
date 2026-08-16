@@ -1,6 +1,7 @@
 # CONTRACTS.md — 봇 입출력 프로토콜 & 틱 타이밍 (SOR)
 
-> **상태: DRAFT v0.7 — Phase 4-B(스킬) 진행 중** (`src/resources/js/skill/`). 이 문서가 이 프로토콜의 단일 진실 소스입니다.
+> **상태: DRAFT v0.8 — Phase 4-B(스킬) 진행 중** (`src/resources/js/skill/`). 이 문서가 이 프로토콜의 단일 진실 소스입니다.
+> ⚠️ **v0.8의 `config.gauge` 변경은 브랜치 `develop-skill-v2`의 시안이며 회의 확정 전입니다** ([ADR-0030](decisions/ADR-0030-gauge-charge-rework.md)).
 > 구현 코드는 이 문서에 정의된 필드/의미론과 항상 일치해야 하며,
 > 반대로 구현하다가 이 문서와 다르게 가야 한다는 게 밝혀지면 **코드부터 바꾸지 말고
 > 먼저 이 문서를 갱신 + 버전을 올리고 [DECISIONS.md](DECISIONS.md)에 사유를 남긴 뒤** 코드를 바꾸세요.
@@ -129,7 +130,7 @@
   "meta":  { "score": { "self": 7, "opp": 6 }, "isPlayer2Serve": false, "rallyFrameCount": 42 },
   "config": {
     "tickFrameGroupSize": 3,
-    "gauge": { "min": 0, "max": 100, "onReceive": 15, "onExtraTouch": -5, "onServe": 0 },
+    "gauge": { "min": 0, "max": 100, "onReceive": 20, "onSmash": -10, "onServe": 0 },
     "claw":  { "cost": 50, "width": 60, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
   }
 }
@@ -179,7 +180,7 @@
 | `.claw.centerX` | 0 ~ 432 | 발톱 범위의 중심 x |
 | `.claw.framesUntilStrike` | 정수 | 발톱이 터지기까지 남은 프레임. `0`이면 이미 터졌고 연출만 남은 상태 |
 | `.claw.framesLeftActive` | 정수 | 연출이 사라지기까지 남은 프레임. 이게 끝나야 그 플레이어가 재발동할 수 있습니다 |
-| `config.gauge` | `{min, max, onReceive, onExtraTouch, onServe}` | 게이지 범위와 증감폭 (D-020) |
+| `config.gauge` | `{min, max, onReceive, onSmash, onServe}` | 게이지 범위와 증감폭 (D-020, D-030). `onSmash`는 접촉 종류와 **무관하게 더해진다** — 리시브를 스매시로 넘기면 `onReceive + onSmash` |
 | `config.claw` | `{cost, width, warningFrames, stunFrames, activeFrames}` | 「claw」 튜닝 상수 (D-021 §3) |
 
 - **`claw`는 시전자 기준**입니다. 발톱의 피해자는 항상 시전자의 상대이므로 **`opp.claw`가 나를
@@ -326,3 +327,4 @@ def decide(snapshot: dict) -> dict:
 | v0.5 | 2026-08-05 | Claude Code (팀장 결재) | 다국어 봇 지원(Python 우선) 확정 — 브라우저 내 WASM 방식(Pyodide, D-012)으로 §1.3에 언어별 러너 개념 추가, §1.4 신설(Python `decide` 시그니처 D-013, Pyodide 지연 로드 D-015, 실패 처리 D-017, 라이브러리 범위 D-018). `TICK_FRAME_GROUP_SIZE`를 1→3으로 상향(D-016, D-001 SUPERSEDE) — Pyodide 오버헤드 흡수 + 밸런스 개선. Pyodide 배포는 정적 복사(D-014) |
 | v0.6 | 2026-08-11 | Claude Code (팀장 결재) | 스킬 발동을 봇 액션에 추가 — 4번째 필드 `skillX`(숫자면 그 x를 중심으로 「claw」 발동, 생략/`null`이면 미발동, 좌표는 코트 전체 0~432에서 클램프, 응답 1건당 최대 1회 소비). 기존 3필드 봇은 무변경으로 계속 동작(D-022). §1.1에 필드와 세부 규칙 추가. **스냅샷(§1.2) 확장(게이지·예고 중인 발톱 노출)은 이번 버전에 포함되지 않음** — 별도 작업 |
 | v0.7 | 2026-08-11 | Claude Code (팀장 결재) | **스냅샷(§1.2) 스킬 확장** — 플레이어 뷰에 `gauge`·`claw`(시전자 기준, 발동 중이 아니면 `null`)·`lyingDownDurationLeft` 추가, `config`에 `gauge`/`claw` 튜닝 상수 블록 추가, §1.2.1 신설. 이걸로 봇이 처음으로 **발톱 회피와 게이지 관리**를 할 수 있게 됨(D-023). 기존 필드는 제거·개명 없음 → 3필드 봇 무변경 동작 |
+| v0.8 | 2026-08-16 | Claude Code (팀장 지시, **시안**) | **게이지 충전 방식 시안** — `config.gauge`에서 `onExtraTouch` 제거, `onSmash` 신설. 자기 진영 연속 터치 페널티(-5)를 없애고(5회 터치 제한이 이미 같은 것을 벌하므로 중복), 대신 **스매시에 -10**을 매긴다. `onReceive`는 15 → 20. `onSmash`는 접촉 종류와 무관하게 더해지므로 리시브를 스매시로 넘기면 `onReceive + onSmash`(= +10)다. **필드가 하나 사라지고 하나 생겼으므로 기존 봇 중 `config.gauge.onExtraTouch`를 읽던 코드는 `undefined`를 본다** — 계약 검사 봇(§6.5)이 이 필드를 검사하므로 같이 갱신했다. 브랜치 `develop-skill-v2`의 시안이며 회의 확정 전이다 (D-030) |

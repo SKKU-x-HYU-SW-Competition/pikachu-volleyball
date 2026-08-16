@@ -176,7 +176,7 @@ def decide(s):
   "meta":  { "score": { "self": 7, "opp": 6 }, "isPlayer2Serve": false, "rallyFrameCount": 42 },
   "config": {
     "tickFrameGroupSize": 3,
-    "gauge": { "min": 0, "max": 100, "onReceive": 15, "onExtraTouch": -5, "onServe": 0 },
+    "gauge": { "min": 0, "max": 100, "onReceive": 20, "onSmash": -10, "onServe": 0 },
     "claw":  { "cost": 50, "width": 60, "warningFrames": 25, "stunFrames": 25, "activeFrames": 10 }
   }
 }
@@ -264,8 +264,10 @@ return {'x': 0, 'y': 0, 'hit': 0, 'skillX': 300}
 if (s.self.gauge >= s.config.claw.cost) { /* 발동 가능 */ }
 ```
 
-- `0 ~ config.gauge.max`(100) 범위. 상대에게서 넘어온 공을 처음 받으면 `config.gauge.onReceive`(+15),
-  자기 진영에서 이어 치면 `config.gauge.onExtraTouch`(-5), 서브는 `config.gauge.onServe`(0)다.
+- `0 ~ config.gauge.max`(100) 범위. 상대에게서 넘어온 공을 처음 받으면 `config.gauge.onReceive`(+20),
+  자기 진영에서 이어 치면 0, 서브는 `config.gauge.onServe`(0)다. 여기에 더해 그 접촉이
+  **스매시(파워히트)면 `config.gauge.onSmash`(-10)가 접촉 종류와 무관하게 더해진다** — 리시브를
+  스매시로 넘기면 `+20 - 10 = +10`이다. 즉 세게 때릴수록 게이지는 늦게 찬다.
   즉 **한 번에 깔끔하게 넘길수록 이득**이고, 경기 시작 시 0으로 리셋된다(랠리가 끝나도 유지).
 - `opp.gauge`도 보인다. 상대가 `config.claw.cost` 이상이면 언제든 맞을 수 있다는 뜻이다.
 
