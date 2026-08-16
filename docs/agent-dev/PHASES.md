@@ -104,6 +104,11 @@ UX가 최우선.
 - **A. 게이지(스킬 자원)** — 스킬을 "무엇으로 사는지"를 먼저 확정. 충전 규칙/범위/리셋 시점만
   정하고 스킬 효과는 건드리지 않는다. 게이지 증감 곡선을 실제 경기에서 눈으로 확인하고 밸런스를
   잡은 뒤 B로 넘어간다 ([ADR-0020](decisions/ADR-0020-gauge-system.md)).
+  - **A' 충전 방식 개편 시안 진행 중** ([ADR-0030](decisions/ADR-0030-gauge-charge-rework.md),
+    CONTRACTS.md v0.8): 리시브 15 → 20, 자기 진영 연속 터치 페널티(-5) 폐지, **스매시 -10** 신설.
+    게이지를 "랠리를 이어가면 저절로 차는 부산물"에서 "어떻게 받아넘길지 고르는 선택"으로 바꾸려는
+    것이다. **`develop-skill-v2` 브랜치에서만 구현했고 회의 확정 전이며 수치는 전부 계측 전
+    임의값이다.** 채택되면 `develop-skill`로 가져오고, 폐기되면 브랜치째 버린다.
 - **B. 스킬 효과 + 발동** — 스킬 종류와 각 소모량, 사람 플레이어의 발동 키, 봇 프로토콜 확장
   (스냅샷에 `gauge` 노출 + 발동 필드). 여기서부터 `physics.js` 수정(Tier B)이 필요할 수 있고,
   [CONTRACTS.md](CONTRACTS.md) 버전업 + 기존 참가자 봇과의 하위 호환 검토가 함께 필요하다.
@@ -127,8 +132,12 @@ UX가 최우선.
 
 **작업 브랜치**: A 이후의 스킬 작업(B)은 `develop`이 아니라 **`develop-skill`**에서 진행한다
 (팀장 결정, [AGENTS.md](../../AGENTS.md) §5). 게이지(A)도 `develop-skill`에 들어가 있다.
+확정된 규칙을 바꿔보는 **시안은 `develop-skill-v2`**에서 만든다 — 회의에서 채택 여부를 정하기
+전에는 `develop-skill`에 섞이지 않게 분리해 둔 것이며, `develop-skill`이 스킬 세트를 `develop`에서
+떼어 놓는 것과 같은 취지다. 현재 A'(충전 방식 개편)가 여기에 있다.
 
-**상태**: **A 구현 완료, B-1(claw)·B-2(스냅샷) 구현 완료, C 일부 완료**. A는 엔진 파일
+**상태**: **A 구현 완료, B-1(claw)·B-2(스냅샷) 구현 완료, C 일부 완료. A'(충전 방식 개편)는
+`develop-skill-v2`에서 시안 구현 완료 / 회의 확정 전**. A는 엔진 파일
 무수정으로 구현됐다 (`player.isCollisionWithBallHappened`를 엔진 밖에서 매 틱 관찰 —
 [05-skill-extension-guide.md](../architecture/05-skill-extension-guide.md) 분류상 Tier A).
 B의 미결 사항은 ADR-0020에 OPEN으로 등재되어 있으며 **정기 회의 안건**이다.
