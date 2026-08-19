@@ -22,6 +22,23 @@ module.exports = {
       chunks: 'all',
     },
   },
+  module: {
+    rules: [
+      // Bot source files under src/code-here/ ship as raw text, NOT as
+      // parsed modules -- their contents are handed to a Worker as a
+      // string and evaluated there (see botWorker.js / botWorkerPython.js).
+      // asset/source overrides webpack's default JS handling for anything
+      // that lands in this directory, so a participant can drop in a plain
+      // top-level `function decide(...)` file without ESM boilerplate. The
+      // registry (src/resources/js/bot/botRegistry.js) picks these up via
+      // require.context. See ADR-0020.
+      {
+        test: /\.(js|py)$/,
+        include: path.resolve(__dirname, 'src/code-here'),
+        type: 'asset/source',
+      },
+    ],
+  },
   plugins: [
     new CleanWebpackPlugin(),
     new CopyPlugin({
@@ -43,7 +60,13 @@ module.exports = {
         // keep dist/ lean; everything Pyodide's runtime actually loads (mjs,
         // wasm, stdlib zip, package repo) is included.
         {
-          from: path.resolve(__dirname, 'node_modules/pyodide') + '/*',
+          // The directory goes in `context` and the glob stays a bare '*' on
+          // purpose. Building the pattern as an absolute path + '/*' instead
+          // produces mixed separators on Windows ("C:\...\pyodide/*"), and the
+          // globber reads those backslashes as escape characters, so the
+          // pattern matches nothing and the whole build fails.
+          context: path.resolve(__dirname, 'node_modules/pyodide'),
+          from: '*',
           to: 'pyodide/[name][ext]',
           globOptions: {
             // Skip TypeScript defs, source maps, HTML consoles, README, and

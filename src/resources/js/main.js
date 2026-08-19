@@ -44,6 +44,8 @@ import { PikachuVolleyball } from './pikavolley.js';
 import { ASSETS_PATH } from './assets_path.js';
 import { setUpUI } from './ui.js';
 import { setUpBotTestUI } from './bot/testSetup.js';
+import { setUpOperatorConsole } from './operator/console.js';
+import { setUpTouchLimit } from './rules/touchLimit.js';
 
 // Reference for how to use Renderer.registerPlugin:
 // https://github.com/pixijs/pixijs/blob/af3c0c6bb15aeb1049178c972e4a14bb4cabfce4/bundles/pixi.js/src/index.ts#L27-L34
@@ -63,8 +65,8 @@ settings.SCALE_MODE = SCALE_MODES.NEAREST;
 settings.ROUND_PIXELS = true;
 
 const renderer = autoDetectRenderer({
-  width: 432,
-  height: 304,
+  width: 432 * ASSETS_PATH.RATIO,
+  height: 304 * ASSETS_PATH.RATIO,
   antialias: false,
   backgroundColor: 0x000000,
   backgroundAlpha: 1,
@@ -85,6 +87,8 @@ document.getElementById('game-canvas-container').appendChild(renderer.view);
 renderer.render(stage); // To make the initial canvas painting stable in the Firefox browser.
 
 loader.add(ASSETS_PATH.SPRITE_SHEET);
+loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_LEFT);
+loader.add(ASSETS_PATH.SPRITE_SHEET_PLAYER_RIGHT);
 for (const prop in ASSETS_PATH.SOUNDS) {
   loader.add(ASSETS_PATH.SOUNDS[prop]);
 }
@@ -146,7 +150,11 @@ function setup() {
   const pikaVolley = new PikachuVolleyball(stage, loader.resources);
   setUpUI(pikaVolley, ticker);
   setUpBotTestUI(pikaVolley, ticker); // Phase 2 test environment, see bot/testSetup.js
+  const operator = setUpOperatorConsole(pikaVolley, ticker); // referee overrides, see operator/console.js
   start(pikaVolley);
+  // After start() on purpose: this observer has to see the frame the game loop
+  // just simulated, and ticker callbacks run in the order they were added.
+  setUpTouchLimit(pikaVolley, ticker, operator); // see rules/touchLimit.js
 }
 
 /**

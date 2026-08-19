@@ -119,7 +119,7 @@ UX가 최우선.
 [ADR-0013](decisions/ADR-0013-python-decide-signature.md)(Python `decide` 시그니처),
 [ADR-0014](decisions/ADR-0014-pyodide-distribution.md)(Pyodide 정적 복사),
 [ADR-0015](decisions/ADR-0015-pyodide-load-timing.md)(Python 선택 시 지연 로드),
-[ADR-0016](decisions/ADR-0016-tick-frame-group-size-raised.md)(TICK_FRAME_GROUP_SIZE 1→5),
+[ADR-0016](decisions/ADR-0016-tick-frame-group-size-raised.md)(TICK_FRAME_GROUP_SIZE 1→3),
 [ADR-0017](decisions/ADR-0017-python-execution-failure.md)(Python 실패 처리),
 [ADR-0018](decisions/ADR-0018-python-library-scope.md)(표준 라이브러리 + numpy).
 
