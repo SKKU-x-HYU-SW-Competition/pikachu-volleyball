@@ -16,13 +16,13 @@ Controller 생성 시점에 플레이어별로 `PikaKeyboard` 인스턴스를 �
 
 ```js
 this.keyboardArray = [
-  new PikaKeyboard('KeyD', 'KeyG', 'KeyR', 'KeyV', 'KeyZ', 'KeyF'), // player1: 좌,우,상,하,파워히트,우하단(대각)
+  new PikaKeyboard('KeyD', 'KeyG', 'KeyR', 'KeyF', 'KeyZ'), // player1: 좌,우,상,하,파워히트
   new PikaKeyboard('ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter'), // player2
 ];
 ```
 
 - 값은 `KeyboardEvent.code` 문자열([MDN 참고](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code/code_values))이다.
-- 플레이어1만 6번째 인자(`downRight`, 예: `KeyF`)를 갖는다 — 우하단 대각 이동을 위한 별도 키. 눌리면 down+right를 동시에 누른 것과 같은 효과.
+- 6번째 인자 `downRight`(눌리면 down+right 동시 입력으로 처리되는 별도 키)는 원조 게임 특성 재현용으로 P1에만 있었으나, 좌/우 진영 조작 대칭을 맞추기 위해 제거했다. `PikaKeyboard` 생성자에서는 여전히 옵셔널 인자로 남아있으므로(기본값 `null`), 필요하면 다시 붙일 수 있다.
 - **키를 새로 바인딩하거나 3번째 플레이어(리플레이/관전 등)를 추가하려면** 이 배열 생성부와 `PikaKeyboard` 생성자 인자만 보면 된다.
 
 ## 3. `PikaKeyboard` / `Key` 클래스 (keyboard.js)
