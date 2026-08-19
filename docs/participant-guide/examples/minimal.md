@@ -38,8 +38,8 @@ def decide(s):
 
 1. 위 코드 중 하나를 `src/code-here/Minimal_v1.js` (또는 `.py`)로 저장
 2. `npm start`가 이미 돌고 있다면 그대로, 아니면 실행
-3. "Bot Setup" → LEFT를 **Bot**으로, 드롭다운에서 `Minimal v1 (JS)` 선택
-   → RIGHT는 **AI**로 → **Apply**
+3. "봇 설정" → LEFT를 **Bot**으로, 드롭다운에서 `Minimal v1 (JS)` 선택
+   → RIGHT는 **AI**로 → **적용(재시작)**
 4. 내장 AI가 서브를 넣고, 우리 Minimal 봇은 가만히 있다가 공에 맞습니다.
 
 이 시점부터 `decide` 안에 로직을 하나씩 추가해가면 진짜 봇이 됩니다.

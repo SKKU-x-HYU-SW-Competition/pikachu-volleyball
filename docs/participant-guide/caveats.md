@@ -132,7 +132,7 @@ if (tickCounter % 100 === 0) console.log(...);
 
 ## Python 특유
 
-- **첫 Apply 후 몇 초 로딩** 있음 (Pyodide + numpy). 두 번째부터는 즉시
+- **첫 적용(재시작) 후 몇 초 로딩** 있음 (Pyodide + numpy). 두 번째부터는 즉시
 - `snapshot`은 dict라 `s.ball.x`가 아니라 `s['ball']['x']`
 - `numpy`만 사용 가능. `scipy`/`pandas`/`sklearn` 등은 초기화 에러
 - 반환값도 반드시 dict (tuple, list, dataclass는 무입력 처리됨)
@@ -141,7 +141,7 @@ if (tickCounter % 100 === 0) console.log(...);
 
 1. 코드 수정 → 저장
 2. dev 서버가 자동 재빌드 (터미널 로그에서 "compiled" 확인)
-3. Bot Setup을 다시 열지 말고 **브라우저에서 Apply만 다시 클릭** — 그러면 새
+3. 봇 설정을 다시 열지 말고 **브라우저에서 적용(재시작)만 다시 클릭** — 그러면 새
    코드로 매치 재시작
 4. 개발자 도구(F12) Console 탭 열어두고 예외 메시지 확인
 5. 이상하면 원인이 잡힐 때까지 Minimal에 조금씩 로직을 얹어가며 이등분 탐색
