@@ -336,64 +336,97 @@
               상에서 직접 돌아가기 때문에 컴퓨터 운영체제에 상관 없이 플레이할
               수 있습니다.
             </p>
-            <p class="margin-top"><span class="thick">조작법:</span></p>
-            <div class="align-center-horizontally">
-              <img
-                class="controls"
-                src="../resources/assets/images/controls_ko.png"
-                width="1920"
-                height="984"
-                alt="game controls"
-              />
-              <p>
-                블루투스 키보드를 연결하면 스마트폰이나 태블릿에서도 플레이할 수
-                있습니다.
-              </p>
-            </div>
             <p class="margin-top">
-              <span class="thick">팁 1:</span><br />
-              원조 게임에서도 그랬듯이,
-              <span class="no_wrap">"혼자서재미있게~"</span>를 선택할 때 "Z"
-              키를 눌러서 선택하면, 왼쪽 피카츄(1P)를 선택하여 컴퓨터와 플레이할
-              수 있습니다. 엔터(Enter) 키를 눌러서 선택하면, 오른쪽 피카츄(2P)를
-              선택하여 컴퓨터와 플레이할 수 있고요.
+              <span class="thick">대회 안내:</span><br />
+              이 페이지는 <span class="no-wrap">성균관대 &times; 한양대</span>
+              SW 경진대회의 <span class="no-wrap">피카츄 배구 봇 배틀</span>을
+              위해 커스터마이즈된 웹 버전입니다. 참가자는 JavaScript 또는
+              Python으로 봇을 작성해서 서로 대결합니다. 사람이 키보드로
+              직접 플레이하는 것도 여전히 가능합니다.
             </p>
             <p class="margin-top">
-              <span class="thick">팁 2:</span><br />
-              왼쪽 피카츄(1P)의 경우 아래 방향키로 "V" 키가 추가로 있습니다. "V"
-              키는 "F" 키와 작동 방식에 차이가 있으므로, 직접 사용해볼 수
-              있습니다. (<span class="no-wrap"
-                ><a
-                  href="https://twitter.com/repeat_c/status/1256494157884841984"
-                  target="_blank"
-                  rel="noopener"
-                  >@repeat_c님의 제보</a
-                ></span
-              >
-              덕분에, 원조 게임의 이 특성을 이 웹 버전에 반영할 수 있었습니다.)
+              <span class="thick">대회 규칙 (요약):</span>
             </p>
+            <ul>
+              <li>원작 피카츄 배구의 룰을 <b>기본적으로</b> 따릅니다.</li>
+              <li><b>10점 선착제</b> (세트 수는 차후 공지)</li>
+              <li>서브권은 <b>매치 시작 시 랜덤</b>으로 결정됩니다.</li>
+              <li>
+                <b>한 진영에서 연속 5회 접촉 시 실점</b> — 원작에는 없는
+                규칙으로, 같은 편에서 공을 계속 주고받아 랠리를 무한히 끄는
+                것을 막기 위함입니다.
+              </li>
+              <li>봇의 결정 주기는 3프레임(120ms), 게임은 25 FPS로 돕니다.</li>
+            </ul>
             <p class="margin-top">
-              <span class="thick">팁 3:</span><br />
-              메뉴 바를 숨기려면 (또는 다시 보이게 하려면), Esc 키를 누르면
-              됩니다.
-            </p>
-            <p class="margin-top">
-              <span class="thick">팁 4:</span><br />
-              원조 피카츄 배구에는 없는 "연습모드"를 추가했습니다.
-              <span class="no_wrap">"설정 &rarr; 연습모드 &rarr; 켜기"</span>를
-              누르면 활성화가 됩니다.
-            </p>
-            <p class="margin-top">
-              <span class="thick">팁 5:</span><br />
-              인터넷 연결 없이도 게임을 플레이 하고 싶은 경우에는 이 페이지를
-              앱으로 설치하면 됩니다. 컴퓨터에서는
+              <span class="thick">실행 방법:</span><br />
+              아래는 요약입니다. 봇 파일명 규약, 시간 예산, 언어별 사용 가능
+              범위 등 <b>자세한 사항은 반드시
               <a
-                href="https://support.google.com/chrome/answer/9658361"
+                href="https://skku-x-hyu-sw-competition.github.io/pikachu-volleyball/participant-guide/#/"
                 target="_blank"
                 rel="noopener"
-                >크롬 브라우저를 이용해 설치</a
-              >할 수 있습니다. 스마트폰이나 태블릿에서는 이 페이지를 "홈 화면에
-              추가"하면 됩니다.
+                >참가자 가이드</a></b>를 참고해주세요.
+            </p>
+            <ol>
+              <li>
+                저장소를 클론하고 <code>npm install</code>로 의존성을
+                설치합니다.<br />
+                <span class="no-wrap"
+                  >대회 저장소:
+                  <a
+                    href="https://github.com/SKKU-x-HYU-SW-Competition/pikachu-volleyball"
+                    target="_blank"
+                    rel="noopener"
+                    >SKKU-x-HYU-SW-Competition/pikachu-volleyball</a
+                  ></span
+                >
+              </li>
+              <li>
+                봇 코드 파일을 <code>src/code-here/</code> 폴더에 배치합니다
+                (파일명 규약: <code>&lt;팀명&gt;_v&lt;버전&gt;.js|py</code>).
+              </li>
+              <li>
+                터미널에서 <code>npm start</code>를 실행하면 로컬에서 게임이
+                뜹니다.
+              </li>
+              <li>메뉴 바의 <b>게임 시작</b>을 눌러 게임 화면으로 들어갑니다.</li>
+              <li>
+                상단의 <b>봇 설정</b> 버튼을 눌러 봇 테스트 설정 창을 엽니다.
+              </li>
+              <li>
+                왼쪽/오른쪽 진영 각각에 대해 입력을 고릅니다:
+                <b>키보드 / 봇 코드 / 기본 AI</b>. 봇 코드 모드에서는
+                <code>src/code-here/</code>에 있는 파일이 드롭다운에 자동으로
+                올라옵니다.
+              </li>
+              <li>
+                <b>적용 (재시작)</b>을 누르면 선택한 설정으로 매치가
+                시작됩니다.
+              </li>
+            </ol>
+            <p class="margin-top">
+              <span class="thick">가이드 &amp; API:</span><br />
+              봇 작성에 필요한 자세한 규칙, <code>snapshot</code> 구조,
+              <code>decide(snapshot)</code> 함수 형식, JS/Python 예제,
+              자주 걸리는 함정 등은 참가자 가이드를 참고해주세요.<br />
+              <span class="no-wrap"
+                >&rarr;
+                <a
+                  href="https://skku-x-hyu-sw-competition.github.io/pikachu-volleyball/participant-guide/#/"
+                  target="_blank"
+                  rel="noopener"
+                  >참가자 가이드 사이트</a
+                ></span
+              >
+            </p>
+            <p class="margin-top">
+              <span class="thick">팁:</span><br />
+              메뉴 바를 숨기거나 다시 보이게 하려면 Esc 키를 누르면 됩니다.
+              키보드로 직접 플레이하는 경우, 왼쪽 피카츄(1P)는
+              <b>D/G/R/F</b> (좌/우/위/아래) + <b>Z</b> (파워히트)로,
+              오른쪽 피카츄(2P)는 <b>방향키</b> + <b>Enter</b> (파워히트)로
+              조작합니다.
             </p>
             <div class="margin-top">
               <button

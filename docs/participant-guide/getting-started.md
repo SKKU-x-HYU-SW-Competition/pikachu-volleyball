@@ -5,7 +5,7 @@
 ## 1. 저장소 받기
 
 ```bash
-git clone <대회_저장소_URL>
+git clone https://github.com/SKKU-x-HYU-SW-Competition/pikachu-volleyball.git
 cd pikachu-volleyball
 npm install
 ```
