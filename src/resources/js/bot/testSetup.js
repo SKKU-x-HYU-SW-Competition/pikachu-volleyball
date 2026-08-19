@@ -465,7 +465,7 @@ function setInputsDisabled(els, disabled) {
  */
 function createDefaultKeyboard(engineSide) {
   if (engineSide === 'LEFT') {
-    return new PikaKeyboard('KeyD', 'KeyG', 'KeyR', 'KeyV', 'KeyZ', 'KeyF');
+    return new PikaKeyboard('KeyD', 'KeyG', 'KeyR', 'KeyF', 'KeyZ');
   }
   return new PikaKeyboard(
     'ArrowLeft',
