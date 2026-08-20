@@ -123,7 +123,9 @@ export class MenuView {
     );
 
     // referred to FUN_00405b70
-    this.messages.pikachuVolleyball.x = RATIO * 140;
+    this.messages.pikachuVolleyball.x = titleRestingX(
+      this.messages.pikachuVolleyball
+    );
     this.messages.pikachuVolleyball.y = RATIO * 80;
     this.messages.pokemon.x = RATIO * 170;
     this.messages.pokemon.y = RATIO * 40;
@@ -235,19 +237,21 @@ export class MenuView {
       this.messages.pikachuVolleyball.visible = true;
     }
 
+    const restX = titleRestingX(this.messages.pikachuVolleyball);
+
     if (frameCounter > 30 && frameCounter <= 44) {
       const xDiff = 195 - 15 * (frameCounter - 30);
-      this.messages.pikachuVolleyball.x = RATIO * (140 + xDiff);
+      this.messages.pikachuVolleyball.x = restX + RATIO * xDiff;
     } else if (frameCounter > 44 && frameCounter <= 55) {
-      this.messages.pikachuVolleyball.x = RATIO * 140;
+      this.messages.pikachuVolleyball.x = restX;
       this.messages.pikachuVolleyball.width =
         RATIO * (200 - 15 * (frameCounter - 44));
     } else if (frameCounter > 55 && frameCounter <= 71) {
-      this.messages.pikachuVolleyball.x = RATIO * 140;
+      this.messages.pikachuVolleyball.x = restX;
       this.messages.pikachuVolleyball.width =
         RATIO * (40 + 15 * (frameCounter - 55));
     } else if (frameCounter > 71) {
-      this.messages.pikachuVolleyball.x = RATIO * 140;
+      this.messages.pikachuVolleyball.x = restX;
       this.messages.pikachuVolleyball.width =
         this.messages.pikachuVolleyball.texture.width;
     }
@@ -724,6 +728,22 @@ export class FadeInOut {
       this.black.visible = true;
     }
   }
+}
+
+/**
+ * Horizontally centered x for the title message.
+ *
+ * The original hard-coded `RATIO * 140`, which only fits the title art it was
+ * drawn for -- a wider title runs off the right edge of the 432*RATIO canvas.
+ * Deriving x from the texture keeps the title centered however the art is
+ * redrawn, so the atlas can hold it at its native size instead of the art
+ * having to be shrunk into a fixed frame (which costs resolution every time
+ * the sheet is regenerated).
+ * @param {Sprite} sprite title sprite
+ * @return {number}
+ */
+function titleRestingX(sprite) {
+  return (RATIO * 432 - sprite.texture.width) / 2;
 }
 
 /**
