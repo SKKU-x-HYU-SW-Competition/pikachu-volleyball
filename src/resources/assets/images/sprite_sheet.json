@@ -222,22 +222,22 @@
   },
   "messages/ko/fight.png": {
    "frame": {
-    "x": 1108,
-    "y": 884,
-    "w": 640,
-    "h": 572
+    "x": 1183,
+    "y": 1194,
+    "w": 528,
+    "h": 528
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 640,
-    "h": 572
+    "w": 528,
+    "h": 528
    },
    "sourceSize": {
-    "w": 640,
-    "h": 572
+    "w": 528,
+    "h": 528
    }
   },
   "messages/ko/game_start.png": {
@@ -282,22 +282,22 @@
   },
   "messages/ko/pikachu_volleyball.png": {
    "frame": {
-    "x": 2,
-    "y": 884,
-    "w": 1104,
-    "h": 293
+    "x": 0,
+    "y": 899,
+    "w": 1337,
+    "h": 260
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 1104,
-    "h": 293
+    "w": 1337,
+    "h": 260
    },
    "sourceSize": {
-    "w": 1104,
-    "h": 293
+    "w": 1337,
+    "h": 260
    }
   },
   "messages/ko/pokemon.png": {
